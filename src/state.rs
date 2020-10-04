@@ -11,28 +11,6 @@ use serde_json;
 use crate::settings::Settings;
 use crate::tomata::{Period, ZERO};
 
-pub struct SettingsLens;
-
-impl Lens<TomataState, Settings> for SettingsLens {
-    fn with<R, F: FnOnce(&Settings) -> R>(&self, data: &TomataState, f: F) -> R {
-        f(&data.settings)
-    }
-
-    fn with_mut<R, F: FnOnce(&mut Settings) -> R>(&self, data: &mut TomataState, f: F) -> R {
-        // get an immutable copy
-        let mut settings = data.settings.clone();
-        let result = f(&mut settings);
-        // only actually mutate the collection if our result is mutated;
-        let changed = match (&settings, &data.settings) {
-            (one, two) => !one.same(two),
-        };
-        if changed {
-            data.settings = settings;
-        }
-        result
-    }
-}
-
 #[derive(Debug, Clone, Data, Lens)]
 pub(crate) struct TomataState {
     settings: Settings,
@@ -49,7 +27,7 @@ impl Default for TomataState {
         TomataState {
             settings: settings.clone(),
             elapsed_time: elapsed_time.clone(),
-            current_period: Period::WorkPeriod,
+            current_period: Period::Work,
             paused: true,
             period_finished: false,
         }
@@ -84,28 +62,14 @@ impl TomataState {
 
     pub(crate) fn cycle_to_next_period(&mut self) {
         match self.current_period {
-            Period::WorkPeriod => self.activate_short_break(),
-            Period::ShortBreak => self.activate_work(),
-            Period::LongBreak => self.activate_work(),
+            Period::Work => self.activate_period(Period::Work),
+            Period::ShortBreak => self.activate_period(Period::ShortBreak),
+            Period::LongBreak => self.activate_period(Period::LongBreak),
         }
     }
 
-    pub(crate) fn activate_work(&mut self) {
-        self.current_period = Period::WorkPeriod;
-        self.paused = true;
-        self.period_finished = false;
-        self.elapsed_time = Rc::new(ZERO);
-    }
-
-    pub(crate) fn activate_short_break(&mut self) {
-        self.current_period = Period::ShortBreak;
-        self.paused = true;
-        self.period_finished = false;
-        self.elapsed_time = Rc::new(ZERO);
-    }
-
-    pub(crate) fn activate_long_break(&mut self) {
-        self.current_period = Period::LongBreak;
+    pub fn activate_period(&mut self, period: Period) {
+        self.current_period = period;
         self.paused = true;
         self.period_finished = false;
         self.elapsed_time = Rc::new(ZERO);
@@ -121,9 +85,7 @@ impl TomataState {
 
     pub(crate) fn increase_period_duration(&mut self, period: Period, value: Duration) {
         match period {
-            Period::WorkPeriod => {
-                self.settings.work_period = Rc::new(*self.settings.work_period + value)
-            }
+            Period::Work => self.settings.work_period = Rc::new(*self.settings.work_period + value),
             Period::ShortBreak => {
                 self.settings.short_break_period =
                     Rc::new(*self.settings.short_break_period + value)
@@ -136,7 +98,7 @@ impl TomataState {
 
     pub(crate) fn decrease_period_duration(&mut self, period: Period, value: Duration) {
         match period {
-            Period::WorkPeriod => {
+            Period::Work => {
                 let current_period_duration = &self.settings.work_period;
                 if value > **current_period_duration {
                     self.settings.work_period = Rc::new(Duration::from_secs(0));
@@ -209,8 +171,8 @@ mod tests {
     #[test]
     fn activating_work_period() {
         let mut state = TomataState::default();
-        state.activate_work();
-        assert_eq!(state.current_period, Period::WorkPeriod);
+        state.activate_period(Period::Work);
+        assert_eq!(state.current_period, Period::Work);
         assert_eq!(state.paused, true);
         assert_eq!(*state.elapsed_time, ZERO);
     }
@@ -218,7 +180,7 @@ mod tests {
     #[test]
     fn activating_short_break() {
         let mut state = TomataState::default();
-        state.activate_short_break();
+        state.activate_period(Period::ShortBreak);
         assert_eq!(state.current_period, Period::ShortBreak);
         assert_eq!(state.paused, true);
         assert_eq!(*state.elapsed_time, ZERO);
@@ -227,7 +189,7 @@ mod tests {
     #[test]
     fn activating_long_break() {
         let mut state = TomataState::default();
-        state.activate_long_break();
+        state.activate_period(Period::LongBreak);
         assert_eq!(state.current_period, Period::LongBreak);
         assert_eq!(state.paused, true);
         assert_eq!(*state.elapsed_time, ZERO);

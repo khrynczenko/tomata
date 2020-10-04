@@ -9,7 +9,7 @@ use druid::{Env, Selector, TimerToken, Widget, WindowDesc};
 
 use crate::state::TomataState;
 use crate::tomata;
-use crate::tomata::{Period, SECOND_S, WINDOW_SIZE_PX};
+use crate::tomata::{Period, APPLICATION_NAME, HOUR_S, MINUTE_S, SECOND_S, WINDOW_SIZE_PX};
 
 // const TICK_INTERVAL: Duration = Duration::new(ZERO_SECONDS, ONE_THOUSAND_NANOSECONDS);
 // `Duration::new` is not a `const` yet so this function would suffice for now
@@ -24,51 +24,9 @@ pub struct TomataApp {
 
 impl TomataApp {
     pub fn new() -> TomataApp {
-        let remaining_time_label = Label::new(|data: &TomataState, _env: &_| {
-            tomata::duration_to_string(&data.calculate_remaining_time())
-        })
-        .with_text_size(32.0);
-
-        let widget_tree = Flex::column()
-            .with_flex_child(Flex::row().with_flex_child(remaining_time_label, 1.0), 1.0)
-            .with_flex_child(
-                Flex::row()
-                    .with_flex_child(
-                        Button::new("Start")
-                            .on_click(|_ctx, data: &mut TomataState, _env| data.start()),
-                        1.0,
-                    )
-                    .with_flex_child(
-                        Button::new("Pause")
-                            .on_click(|_ctx, data: &mut TomataState, _env| data.pause()),
-                        1.0,
-                    ),
-                1.0,
-            )
-            .with_flex_child(
-                Flex::row()
-                    .with_flex_child(
-                        Button::new("Work")
-                            .on_click(|_ctx, data: &mut TomataState, _env| data.activate_work()),
-                        1.0,
-                    )
-                    .with_flex_child(
-                        Button::new("Short").on_click(|_ctx, data: &mut TomataState, _env| {
-                            data.activate_short_break()
-                        }),
-                        1.0,
-                    )
-                    .with_flex_child(
-                        Button::new("Long").on_click(|_ctx, data: &mut TomataState, _env| {
-                            data.activate_long_break()
-                        }),
-                        1.0,
-                    ),
-                1.0,
-            );
         TomataApp {
             timer_id: TimerToken::INVALID,
-            widget_tree: Box::new(widget_tree),
+            widget_tree: Box::new(make_main_window_widget_tree()),
         }
     }
 }
@@ -79,19 +37,13 @@ impl Widget<TomataState> for TomataApp {
             Event::WindowConnected => {
                 self.timer_id = ctx.request_timer(make_tick_interval());
             }
-            Event::Command(cmd) => {
+            Event::Command(command) => {
                 let settings_selector: Selector<TomataState> = Selector::new("Settings");
                 let about_selector: Selector<TomataState> = Selector::new("About");
-                if cmd.is(about_selector) {
-                    let new_win = WindowDesc::new(make_about_page)
-                        .window_size(WINDOW_SIZE_PX)
-                        .resizable(false);
-                    ctx.new_window(new_win);
-                } else if cmd.is(settings_selector) {
-                    let new_win = WindowDesc::new(make_settings_page)
-                        .window_size((420.0, 225.0))
-                        .resizable(false);
-                    ctx.new_window(new_win);
+                if command.is(about_selector) {
+                    ctx.new_window(make_about_window());
+                } else if command.is(settings_selector) {
+                    ctx.new_window(make_settings_window());
                 }
             }
             Event::Timer(id) => {
@@ -148,89 +100,121 @@ impl Widget<TomataState> for TomataApp {
     }
 }
 
-fn make_settings_label(period: Period) -> impl Widget<TomataState> {
+fn make_main_window_widget_tree() -> impl Widget<TomataState> {
+    let remaining_time_label = Label::new(|data: &TomataState, _env: &_| {
+        tomata::duration_to_string(&data.calculate_remaining_time())
+    })
+    .with_text_size(32.0);
+
+    let start_button =
+        Button::new("Start").on_click(|_ctx, data: &mut TomataState, _env| data.start());
+
+    let pause_button =
+        Button::new("Pause").on_click(|_ctx, data: &mut TomataState, _env| data.pause());
+
+    let work_period_button = Button::new("Work")
+        .on_click(|_ctx, data: &mut TomataState, _env| data.activate_period(Period::Work));
+
+    let short_break_period_button = Button::new("Short")
+        .on_click(|_ctx, data: &mut TomataState, _env| data.activate_period(Period::ShortBreak));
+
+    let long_break_period_button = Button::new("Long")
+        .on_click(|_ctx, data: &mut TomataState, _env| data.activate_period(Period::LongBreak));
+
+    let widget_tree = Flex::column()
+        .with_flex_child(Flex::row().with_flex_child(remaining_time_label, 1.0), 1.0)
+        .with_flex_child(
+            Flex::row()
+                .with_flex_child(start_button, 1.0)
+                .with_flex_child(pause_button, 1.0),
+            1.0,
+        )
+        .with_flex_child(
+            Flex::row()
+                .with_flex_child(work_period_button, 1.0)
+                .with_flex_child(short_break_period_button, 1.0)
+                .with_flex_child(long_break_period_button, 1.0),
+            1.0,
+        );
+    widget_tree
+}
+
+fn make_settings_window() -> WindowDesc<TomataState> {
+    WindowDesc::new(make_settings_window_widget_tree)
+        .title(APPLICATION_NAME)
+        .window_size((420.0, 225.0))
+        .resizable(false)
+}
+
+fn make_about_window() -> WindowDesc<TomataState> {
+    WindowDesc::new(make_about_page)
+        .title(APPLICATION_NAME)
+        .window_size(WINDOW_SIZE_PX)
+        .resizable(false)
+}
+
+fn make_settings_window_widget_tree() -> impl Widget<TomataState> {
+    let tree = Flex::column()
+        .with_child(make_period_adjustment_row(Period::Work))
+        .with_child(make_period_adjustment_row(Period::ShortBreak))
+        .with_child(make_period_adjustment_row(Period::LongBreak))
+        .with_child(make_save_row());
+    tree
+}
+
+fn make_period_adjustment_row(period: Period) -> impl Widget<TomataState> {
+    let tree = Flex::row()
+        .with_child(make_period_name_label(period))
+        .with_flex_child(
+            Flex::row()
+                .with_child(Align::right(make_period_value_label(period)))
+                .with_flex_child(make_period_adjustment_buttons(period), 1.0),
+            1.0,
+        );
+    tree
+}
+
+fn make_period_name_label(period: Period) -> impl Widget<TomataState> {
     let text = match period {
-        Period::WorkPeriod => "Work interval: ",
+        Period::Work => "Work interval: ",
         Period::ShortBreak => "Short break interval: ",
         Period::LongBreak => "Long break interval: ",
     };
     Label::new(text).padding(1.0).fix_width(170.0)
 }
 
-fn make_stepper_text(period: Period) -> impl Widget<TomataState> {
+fn make_period_value_label(period: Period) -> impl Widget<TomataState> {
     Label::new(move |data: &TomataState, _env: &_| {
         tomata::duration_to_string(&data.get_settings().get_duration_for_period(period))
     })
 }
 
-fn make_settings_set_buttons(period: Period) -> impl Widget<TomataState> {
+fn make_period_adjustment_buttons(period: Period) -> impl Widget<TomataState> {
+    let plus_one_hour_button = make_period_adjusting_button(Sign::Plus, Change::Hour, period);
+    let minus_one_hour_button = make_period_adjusting_button(Sign::Minus, Change::Hour, period);
+    let plus_one_minute_button = make_period_adjusting_button(Sign::Plus, Change::Minute, period);
+    let minus_one_minute_button = make_period_adjusting_button(Sign::Minus, Change::Minute, period);
+    let plus_one_second_button = make_period_adjusting_button(Sign::Plus, Change::Second, period);
+    let minus_one_second_button = make_period_adjusting_button(Sign::Minus, Change::Second, period);
     Flex::row()
         .with_child(
             Flex::column()
-                .with_child(
-                    Button::new("+1h")
-                        .on_click(move |_ctx, data: &mut TomataState, _env| {
-                            data.increase_period_duration(period, Duration::from_secs(60 * 60))
-                        })
-                        .expand_width(),
-                )
-                .with_child(
-                    Button::new("-1h")
-                        .on_click(move |_ctx, data: &mut TomataState, _env| {
-                            data.decrease_period_duration(period, Duration::from_secs(60 * 60))
-                        })
-                        .expand_width(),
-                )
+                .with_child(plus_one_hour_button)
+                .with_child(minus_one_hour_button)
                 .fix_width(50.0),
         )
         .with_child(
             Flex::column()
-                .with_child(
-                    Button::new("+1m")
-                        .on_click(move |_ctx, data: &mut TomataState, _env| {
-                            data.increase_period_duration(period, Duration::from_secs(60))
-                        })
-                        .expand_width(),
-                )
-                .with_child(
-                    Button::new("-1m")
-                        .on_click(move |_ctx, data: &mut TomataState, _env| {
-                            data.decrease_period_duration(period, Duration::from_secs(60))
-                        })
-                        .expand_width(),
-                )
+                .with_child(plus_one_minute_button)
+                .with_child(minus_one_minute_button)
                 .fix_width(50.0),
         )
         .with_child(
             Flex::column()
-                .with_child(
-                    Button::new("+1s")
-                        .on_click(move |_ctx, data: &mut TomataState, _env| {
-                            data.increase_period_duration(period, Duration::from_secs(1))
-                        })
-                        .expand_width(),
-                )
-                .with_child(
-                    Button::new("-1s")
-                        .on_click(move |_ctx, data: &mut TomataState, _env| {
-                            data.decrease_period_duration(period, Duration::from_secs(1))
-                        })
-                        .expand_width(),
-                )
+                .with_child(plus_one_second_button)
+                .with_child(minus_one_second_button)
                 .fix_width(50.0),
         )
-}
-
-fn make_settings_row(period: Period) -> impl Widget<TomataState> {
-    let tree = Flex::row()
-        .with_child(make_settings_label(period))
-        .with_flex_child(
-            Flex::row()
-                .with_child(Align::right(make_stepper_text(period)))
-                .with_flex_child(make_settings_set_buttons(period), 1.0),
-            1.0,
-        );
-    tree
 }
 
 fn make_save_row() -> impl Widget<TomataState> {
@@ -248,11 +232,44 @@ fn make_about_page() -> impl Widget<TomataState> {
     remaining_time_label
 }
 
-fn make_settings_page() -> impl Widget<TomataState> {
-    let tree = Flex::column()
-        .with_child(make_settings_row(Period::WorkPeriod))
-        .with_child(make_settings_row(Period::ShortBreak))
-        .with_child(make_settings_row(Period::LongBreak))
-        .with_child(make_save_row());
-    tree
+enum Sign {
+    Plus,
+    Minus,
+}
+
+enum Change {
+    Hour,
+    Minute,
+    Second,
+}
+
+fn make_period_adjusting_button(
+    sign: Sign,
+    change: Change,
+    period: Period,
+) -> impl Widget<TomataState> {
+    let sign_char: char = match sign {
+        Sign::Plus => '+',
+        Sign::Minus => '-',
+    };
+    let adjustment_method = match sign {
+        Sign::Plus => TomataState::increase_period_duration,
+        Sign::Minus => TomataState::decrease_period_duration,
+    };
+    let change_char: char = match change {
+        Change::Hour => 'h',
+        Change::Minute => 'm',
+        Change::Second => 's',
+    };
+    let duration: Duration = match change {
+        Change::Hour => Duration::from_secs(HOUR_S),
+        Change::Minute => Duration::from_secs(MINUTE_S),
+        Change::Second => Duration::from_secs(SECOND_S),
+    };
+    let button_text: String = [sign_char, '1', change_char].iter().collect();
+    Button::new(button_text)
+        .on_click(move |_ctx, data: &mut TomataState, _env| {
+            adjustment_method(data, period, duration)
+        })
+        .expand_width()
 }

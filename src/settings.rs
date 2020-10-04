@@ -9,6 +9,7 @@ use crate::tomata::{Period, MINUTE_S};
 
 pub const TWENTY_FIVE_MINUTES: u64 = MINUTE_S * 25;
 pub const FIVE_MINUTES: u64 = MINUTE_S * 5;
+pub const EIGHT_MINUTES: u64 = MINUTE_S * 8;
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, Data, Lens)]
 pub struct Settings {
@@ -20,9 +21,9 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Settings {
         Settings {
-            work_period: Rc::new(Duration::from_secs(10)),
-            short_break_period: Rc::new(Duration::from_secs(5)),
-            long_break_period: Rc::new(Duration::from_secs(8)),
+            work_period: Rc::new(Duration::from_secs(TWENTY_FIVE_MINUTES)),
+            short_break_period: Rc::new(Duration::from_secs(FIVE_MINUTES)),
+            long_break_period: Rc::new(Duration::from_secs(EIGHT_MINUTES)),
         }
     }
 }
@@ -30,7 +31,7 @@ impl Default for Settings {
 impl Settings {
     pub fn get_duration_for_period(&self, period: Period) -> Duration {
         match period {
-            Period::WorkPeriod => *self.work_period,
+            Period::Work => *self.work_period,
             Period::ShortBreak => *self.short_break_period,
             Period::LongBreak => *self.long_break_period,
         }
