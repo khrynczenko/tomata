@@ -48,12 +48,16 @@ impl TomataState {
         self.period_finished
     }
 
+    pub(crate) fn start(&mut self) {
+        self.paused = false;
+    }
+
     pub(crate) fn pause(&mut self) {
         self.paused = true;
     }
 
-    pub(crate) fn start(&mut self) {
-        self.paused = false;
+    pub(crate) fn reset(&mut self) {
+        self.activate_period(self.current_period);
     }
 
     pub(crate) fn get_settings(&self) -> &Settings {

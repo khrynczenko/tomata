@@ -112,6 +112,9 @@ fn make_main_window_widget_tree() -> impl Widget<TomataState> {
     let pause_button =
         Button::new("Pause").on_click(|_ctx, data: &mut TomataState, _env| data.pause());
 
+    let reset_button =
+        Button::new("Reset").on_click(|_ctx, data: &mut TomataState, _env| data.reset());
+
     let work_period_button = Button::new("Work")
         .on_click(|_ctx, data: &mut TomataState, _env| data.activate_period(Period::Work));
 
@@ -126,7 +129,8 @@ fn make_main_window_widget_tree() -> impl Widget<TomataState> {
         .with_flex_child(
             Flex::row()
                 .with_flex_child(start_button, 1.0)
-                .with_flex_child(pause_button, 1.0),
+                .with_flex_child(pause_button, 1.0)
+                .with_flex_child(reset_button, 1.0),
             1.0,
         )
         .with_flex_child(
