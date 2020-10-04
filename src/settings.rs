@@ -55,27 +55,27 @@ impl Settings {
         }
         self.short_breaks_number -= value;
     }
+}
 
-    pub fn from_file(path: impl AsRef<Path>) -> Option<Settings> {
-        let open_result = File::open(path);
-        if open_result.is_err() {
-            return None;
-        }
-
-        let reader = BufReader::new(open_result.unwrap());
-        let deserialize_result = serde_json::from_reader(reader);
-        if deserialize_result.is_err() {
-            return None;
-        }
-        Some(deserialize_result.unwrap())
+pub fn load_settings_from_file(path: impl AsRef<Path>) -> Option<Settings> {
+    let open_result = File::open(path);
+    if open_result.is_err() {
+        return None;
     }
 
-    pub fn to_file(&self, path: impl AsRef<Path>) -> io::Result<()> {
-        let create_result = File::create(path)?;
-        let buffer = BufWriter::new(create_result);
-        serde_json::to_writer_pretty(buffer, &self).unwrap();
-        Ok(())
+    let reader = BufReader::new(open_result.unwrap());
+    let deserialize_result = serde_json::from_reader(reader);
+    if deserialize_result.is_err() {
+        return None;
     }
+    Some(deserialize_result.unwrap())
+}
+
+pub fn save_settings_to_file(settings: &Settings, path: impl AsRef<Path>) -> io::Result<()> {
+    let create_result = File::create(path)?;
+    let buffer = BufWriter::new(create_result);
+    serde_json::to_writer_pretty(buffer, settings).unwrap();
+    Ok(())
 }
 
 #[cfg(test)]

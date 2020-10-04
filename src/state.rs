@@ -1,5 +1,3 @@
-use std::io;
-use std::path::Path;
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -9,7 +7,7 @@ use crate::settings::Settings;
 use crate::tomata::{Period, ZERO};
 
 #[derive(Debug, Clone, Data, Lens)]
-pub(crate) struct TomataState {
+pub struct TomataState {
     settings: Settings,
     elapsed_time: Rc<Duration>,
     current_period: Period,
@@ -39,31 +37,31 @@ impl TomataState {
         state.settings = settings;
         state
     }
-    pub(crate) fn is_paused(&self) -> bool {
+    pub fn is_paused(&self) -> bool {
         self.paused
     }
 
-    pub(crate) fn is_finished(&self) -> bool {
+    pub fn is_finished(&self) -> bool {
         self.period_finished
     }
 
-    pub(crate) fn start(&mut self) {
+    pub fn start(&mut self) {
         self.paused = false;
     }
 
-    pub(crate) fn pause(&mut self) {
+    pub fn pause(&mut self) {
         self.paused = true;
     }
 
-    pub(crate) fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.activate_period(self.current_period);
     }
 
-    pub(crate) fn get_settings(&self) -> &Settings {
+    pub fn get_settings(&self) -> &Settings {
         &self.settings
     }
 
-    pub(crate) fn cycle_to_next_period(&mut self) {
+    pub fn cycle_to_next_period(&mut self) {
         match self.current_period {
             Period::Work => {
                 if self.short_breaks_finished == self.settings.short_breaks_number {
@@ -90,7 +88,7 @@ impl TomataState {
         self.elapsed_time = Rc::new(ZERO);
     }
 
-    pub(crate) fn increase_elapsed_time(&mut self, value: Duration) {
+    pub fn increase_elapsed_time(&mut self, value: Duration) {
         self.elapsed_time = Rc::new(*self.elapsed_time + value);
         let period_duration = self
             .settings
@@ -100,7 +98,7 @@ impl TomataState {
         }
     }
 
-    pub(crate) fn increase_period_duration(&mut self, period: Period, value: Duration) {
+    pub fn increase_period_duration(&mut self, period: Period, value: Duration) {
         match period {
             Period::Work => self.settings.work_period = Rc::new(*self.settings.work_period + value),
             Period::ShortBreak => {
@@ -113,7 +111,7 @@ impl TomataState {
         }
     }
 
-    pub(crate) fn decrease_period_duration(&mut self, period: Period, value: Duration) {
+    pub fn decrease_period_duration(&mut self, period: Period, value: Duration) {
         match period {
             Period::Work => {
                 let current_period_duration = &self.settings.work_period;
@@ -155,7 +153,7 @@ impl TomataState {
         self.settings.decrease_short_breaks_number(value);
     }
 
-    pub(crate) fn calculate_remaining_time(&self) -> Duration {
+    pub fn calculate_remaining_time(&self) -> Duration {
         let period_duration = self
             .settings
             .convert_period_to_duration(self.current_period);
@@ -163,10 +161,6 @@ impl TomataState {
             return ZERO;
         }
         period_duration - *self.elapsed_time
-    }
-
-    pub(crate) fn serialize_settings(&self, path: impl AsRef<Path>) -> io::Result<()> {
-        self.settings.to_file(path)
     }
 }
 

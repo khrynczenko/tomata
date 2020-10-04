@@ -18,7 +18,7 @@ pub enum Period {
     LongBreak,
 }
 
-pub(crate) fn duration_to_string(duration: &Duration) -> String {
+pub fn duration_to_string(duration: &Duration) -> String {
     let seconds = duration.as_secs();
     format!(
         "{:0>2}:{:0>2}:{:0>2}",

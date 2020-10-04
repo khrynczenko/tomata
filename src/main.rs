@@ -33,12 +33,12 @@ fn main() -> Result<(), PlatformError> {
         .window_size(WINDOW_SIZE_PX)
         .resizable(false);
 
-    let from_file_result = Settings::from_file("settings.json");
+    let from_file_result = settings::load_settings_from_file("settings.json");
     let settings = if from_file_result.is_some() {
         from_file_result.unwrap()
     } else {
         let settings = Settings::default();
-        settings.to_file("settings.json").expect(&format!(
+        settings::save_settings_to_file(&settings, "settings.json").expect(&format!(
             "{}{}",
             "Could not create `settings.json`", "to store the application settings."
         ));

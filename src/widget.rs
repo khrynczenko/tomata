@@ -7,6 +7,7 @@ use druid::{
 };
 use druid::{Env, Selector, TimerToken, Widget, WindowDesc};
 
+use crate::settings;
 use crate::settings::Settings;
 use crate::state::TomataState;
 use crate::tomata;
@@ -263,11 +264,11 @@ fn make_short_breaks_adjustment_buttons() -> impl Widget<TomataState> {
 fn make_save_row() -> impl Widget<TomataState> {
     let tree = Flex::row().with_child(Align::new(
         UnitPoint::RIGHT,
-        Button::new("Save").on_click(move |_ctx, data: &mut TomataState, _env| {
-            data.serialize_settings("settings.json").unwrap()
+        Button::new("Save").on_click(|_ctx, data: &mut Settings, _env| {
+            settings::save_settings_to_file(data, "settings.json").unwrap();
         }),
     ));
-    tree
+    LensWrap::new(tree, TomataState::settings)
 }
 
 fn make_about_page() -> impl Widget<TomataState> {
