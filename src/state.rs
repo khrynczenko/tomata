@@ -1,12 +1,9 @@
-use std::fs::File;
-use std::io::BufWriter;
-use std::io::Result as IOResult;
+use std::io;
 use std::path::Path;
 use std::rc::Rc;
 use std::time::Duration;
 
 use druid::{Data, Lens};
-use serde_json;
 
 use crate::settings::Settings;
 use crate::tomata::{Period, ZERO};
@@ -142,11 +139,8 @@ impl TomataState {
         period_duration - *self.elapsed_time
     }
 
-    pub(crate) fn serialize_settings(&self, path: impl AsRef<Path>) -> IOResult<()> {
-        let file = File::create(path)?;
-        let buffer = BufWriter::new(file);
-        serde_json::to_writer_pretty(buffer, &self.settings).unwrap();
-        Ok(())
+    pub(crate) fn serialize_settings(&self, path: impl AsRef<Path>) -> io::Result<()> {
+        self.settings.to_file(path)
     }
 }
 
