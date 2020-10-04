@@ -15,6 +15,7 @@ pub(crate) struct TomataState {
     current_period: Period,
     paused: bool,
     period_finished: bool,
+    short_breaks_finished: usize,
 }
 
 impl Default for TomataState {
@@ -27,6 +28,7 @@ impl Default for TomataState {
             current_period: Period::Work,
             paused: true,
             period_finished: false,
+            short_breaks_finished: 0,
         }
     }
 }
@@ -63,9 +65,21 @@ impl TomataState {
 
     pub(crate) fn cycle_to_next_period(&mut self) {
         match self.current_period {
-            Period::Work => self.activate_period(Period::Work),
-            Period::ShortBreak => self.activate_period(Period::ShortBreak),
-            Period::LongBreak => self.activate_period(Period::LongBreak),
+            Period::Work => {
+                if self.short_breaks_finished == self.settings.short_breaks_number {
+                    self.activate_period(Period::LongBreak);
+                } else {
+                    self.activate_period(Period::ShortBreak);
+                }
+            }
+            Period::ShortBreak => {
+                self.short_breaks_finished += 1;
+                self.activate_period(Period::Work);
+            }
+            Period::LongBreak => {
+                self.short_breaks_finished = 0;
+                self.activate_period(Period::Work);
+            }
         }
     }
 
@@ -78,7 +92,9 @@ impl TomataState {
 
     pub(crate) fn increase_elapsed_time(&mut self, value: Duration) {
         self.elapsed_time = Rc::new(*self.elapsed_time + value);
-        let period_duration = self.settings.get_duration_for_period(self.current_period);
+        let period_duration = self
+            .settings
+            .convert_period_to_duration(self.current_period);
         if period_duration <= *self.elapsed_time {
             self.period_finished = true;
         }
@@ -131,8 +147,18 @@ impl TomataState {
         }
     }
 
+    pub fn increase_short_breaks_number(&mut self, value: usize) {
+        self.settings.increase_short_breaks_number(value);
+    }
+
+    pub fn decrease_short_breaks_number(&mut self, value: usize) {
+        self.settings.decrease_short_breaks_number(value);
+    }
+
     pub(crate) fn calculate_remaining_time(&self) -> Duration {
-        let period_duration = self.settings.get_duration_for_period(self.current_period);
+        let period_duration = self
+            .settings
+            .convert_period_to_duration(self.current_period);
         if period_duration <= *self.elapsed_time {
             return ZERO;
         }
@@ -191,5 +217,22 @@ mod tests {
         assert_eq!(state.current_period, Period::LongBreak);
         assert_eq!(state.paused, true);
         assert_eq!(*state.elapsed_time, ZERO);
+    }
+
+    #[test]
+    fn cycling_over_all_periods() {
+        let mut state = TomataState::default();
+        let short_breaks_number = state.settings.short_breaks_number;
+        for _ in 0..short_breaks_number {
+            assert_eq!(state.current_period, Period::Work);
+            state.cycle_to_next_period();
+            assert_eq!(state.current_period, Period::ShortBreak);
+            state.cycle_to_next_period();
+        }
+        assert_eq!(state.current_period, Period::Work);
+        state.cycle_to_next_period();
+        assert_eq!(state.current_period, Period::LongBreak);
+        state.cycle_to_next_period();
+        assert_eq!(state.current_period, Period::Work);
     }
 }

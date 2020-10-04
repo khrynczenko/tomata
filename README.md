@@ -11,10 +11,10 @@ intervals for work period, short break, logn break and more options.
 
 - [x] Stopwatch
 - [x] Start/Pause
-- [x] Switch between work/shor break/long break periods
+- [x] Switch between work/short break/long break periods
 - [x] Reset
 - [x] Configurable length for all the intervals
-- [ ] Configurable number (work -> short break) intervals before long break
+- [x] Configurable number (work -> short break) intervals before long break
 - [ ] Option to disable long break
 - [ ] Option to automatically start next period
 - [ ] System notification when

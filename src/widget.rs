@@ -2,11 +2,12 @@ use std::time::Duration;
 
 use druid::widget::{Align, Button, Flex, Label};
 use druid::{
-    BoxConstraints, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, Size, UnitPoint,
-    UpdateCtx, WidgetExt,
+    BoxConstraints, Event, EventCtx, LayoutCtx, LensWrap, LifeCycle, LifeCycleCtx, PaintCtx, Size,
+    UnitPoint, UpdateCtx, WidgetExt,
 };
 use druid::{Env, Selector, TimerToken, Widget, WindowDesc};
 
+use crate::settings::Settings;
 use crate::state::TomataState;
 use crate::tomata;
 use crate::tomata::{Period, APPLICATION_NAME, HOUR_S, MINUTE_S, SECOND_S, WINDOW_SIZE_PX};
@@ -162,6 +163,7 @@ fn make_settings_window_widget_tree() -> impl Widget<TomataState> {
         .with_child(make_period_adjustment_row(Period::Work))
         .with_child(make_period_adjustment_row(Period::ShortBreak))
         .with_child(make_period_adjustment_row(Period::LongBreak))
+        .with_child(make_short_breaks_number_adjustment_row())
         .with_child(make_save_row());
     tree
 }
@@ -189,7 +191,7 @@ fn make_period_name_label(period: Period) -> impl Widget<TomataState> {
 
 fn make_period_value_label(period: Period) -> impl Widget<TomataState> {
     Label::new(move |data: &TomataState, _env: &_| {
-        tomata::duration_to_string(&data.get_settings().get_duration_for_period(period))
+        tomata::duration_to_string(&data.get_settings().convert_period_to_duration(period))
     })
 }
 
@@ -219,6 +221,43 @@ fn make_period_adjustment_buttons(period: Period) -> impl Widget<TomataState> {
                 .with_child(minus_one_second_button)
                 .fix_width(50.0),
         )
+}
+
+fn make_short_breaks_number_adjustment_row() -> impl Widget<TomataState> {
+    let description_label = Label::new("Number of short breaks before long break:");
+    let value_label = make_short_breaks_number_before_long_break();
+    let tree = Flex::row().with_child(description_label).with_flex_child(
+        Flex::row()
+            .with_child(Align::right(value_label))
+            .with_flex_child(make_short_breaks_adjustment_buttons(), 1.0),
+        1.0,
+    );
+    tree
+}
+
+fn make_short_breaks_number_before_long_break() -> impl Widget<TomataState> {
+    let label: Label<usize> = Label::new(|data: &usize, _env: &_| format!("{}", *data));
+    let label = LensWrap::new(label, Settings::short_breaks_number);
+    LensWrap::new(label, TomataState::settings)
+}
+
+fn make_short_breaks_adjustment_buttons() -> impl Widget<TomataState> {
+    let plus_button = Button::new("+")
+        .on_click(move |_ctx, data: &mut TomataState, _env| {
+            data.increase_short_breaks_number(1);
+        })
+        .expand_width();
+    let minus_button = Button::new("-")
+        .on_click(move |_ctx, data: &mut TomataState, _env| {
+            data.decrease_short_breaks_number(1);
+        })
+        .expand_width();
+    Flex::row().with_child(
+        Flex::column()
+            .with_child(plus_button)
+            .with_child(minus_button)
+            .fix_width(50.0),
+    )
 }
 
 fn make_save_row() -> impl Widget<TomataState> {
