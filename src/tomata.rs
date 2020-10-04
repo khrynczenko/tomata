@@ -2,6 +2,8 @@ use std::time::Duration;
 
 use druid::Data;
 
+pub const WINDOW_SIZE_PX: (f64, f64) = (250.0, 250.0);
+
 pub const SECOND_S: u64 = 1;
 pub const MINUTE_S: u64 = SECOND_S * 60;
 pub const HOUR_S: u64 = MINUTE_S * 60;

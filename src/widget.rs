@@ -1,14 +1,15 @@
 use std::time::Duration;
 
-use druid::widget::{Button, Flex, Label};
+use druid::widget::{Align, Button, Flex, Label};
 use druid::{
-    BoxConstraints, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, Size, UpdateCtx,
+    BoxConstraints, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, Size, UnitPoint,
+    UpdateCtx, WidgetExt,
 };
-use druid::{Env, TimerToken, Widget};
+use druid::{Env, Selector, TimerToken, Widget, WindowDesc};
 
 use crate::state::TomataState;
 use crate::tomata;
-use crate::tomata::SECOND_S;
+use crate::tomata::{Period, SECOND_S, WINDOW_SIZE_PX};
 
 // const TICK_INTERVAL: Duration = Duration::new(ZERO_SECONDS, ONE_THOUSAND_NANOSECONDS);
 // `Duration::new` is not a `const` yet so this function would suffice for now
@@ -78,6 +79,21 @@ impl Widget<TomataState> for TomataApp {
             Event::WindowConnected => {
                 self.timer_id = ctx.request_timer(make_tick_interval());
             }
+            Event::Command(cmd) => {
+                let settings_selector: Selector<TomataState> = Selector::new("Settings");
+                let about_selector: Selector<TomataState> = Selector::new("About");
+                if cmd.is(about_selector) {
+                    let new_win = WindowDesc::new(make_about_page)
+                        .window_size(WINDOW_SIZE_PX)
+                        .resizable(false);
+                    ctx.new_window(new_win);
+                } else if cmd.is(settings_selector) {
+                    let new_win = WindowDesc::new(make_settings_page)
+                        .window_size((420.0, 225.0))
+                        .resizable(false);
+                    ctx.new_window(new_win);
+                }
+            }
             Event::Timer(id) => {
                 if *id == self.timer_id {
                     if !data.is_paused() {
@@ -130,4 +146,113 @@ impl Widget<TomataState> for TomataApp {
     fn paint(&mut self, ctx: &mut PaintCtx, data: &TomataState, env: &Env) {
         self.widget_tree.paint(ctx, data, env);
     }
+}
+
+fn make_settings_label(period: Period) -> impl Widget<TomataState> {
+    let text = match period {
+        Period::WorkPeriod => "Work interval: ",
+        Period::ShortBreak => "Short break interval: ",
+        Period::LongBreak => "Long break interval: ",
+    };
+    Label::new(text).padding(1.0).fix_width(170.0)
+}
+
+fn make_stepper_text(period: Period) -> impl Widget<TomataState> {
+    Label::new(move |data: &TomataState, _env: &_| {
+        tomata::duration_to_string(&data.get_settings().get_duration_for_period(period))
+    })
+}
+
+fn make_settings_set_buttons(period: Period) -> impl Widget<TomataState> {
+    Flex::row()
+        .with_child(
+            Flex::column()
+                .with_child(
+                    Button::new("+1h")
+                        .on_click(move |_ctx, data: &mut TomataState, _env| {
+                            data.increase_period_duration(period, Duration::from_secs(60 * 60))
+                        })
+                        .expand_width(),
+                )
+                .with_child(
+                    Button::new("-1h")
+                        .on_click(move |_ctx, data: &mut TomataState, _env| {
+                            data.decrease_period_duration(period, Duration::from_secs(60 * 60))
+                        })
+                        .expand_width(),
+                )
+                .fix_width(50.0),
+        )
+        .with_child(
+            Flex::column()
+                .with_child(
+                    Button::new("+1m")
+                        .on_click(move |_ctx, data: &mut TomataState, _env| {
+                            data.increase_period_duration(period, Duration::from_secs(60))
+                        })
+                        .expand_width(),
+                )
+                .with_child(
+                    Button::new("-1m")
+                        .on_click(move |_ctx, data: &mut TomataState, _env| {
+                            data.decrease_period_duration(period, Duration::from_secs(60))
+                        })
+                        .expand_width(),
+                )
+                .fix_width(50.0),
+        )
+        .with_child(
+            Flex::column()
+                .with_child(
+                    Button::new("+1s")
+                        .on_click(move |_ctx, data: &mut TomataState, _env| {
+                            data.increase_period_duration(period, Duration::from_secs(1))
+                        })
+                        .expand_width(),
+                )
+                .with_child(
+                    Button::new("-1s")
+                        .on_click(move |_ctx, data: &mut TomataState, _env| {
+                            data.decrease_period_duration(period, Duration::from_secs(1))
+                        })
+                        .expand_width(),
+                )
+                .fix_width(50.0),
+        )
+}
+
+fn make_settings_row(period: Period) -> impl Widget<TomataState> {
+    let tree = Flex::row()
+        .with_child(make_settings_label(period))
+        .with_flex_child(
+            Flex::row()
+                .with_child(Align::right(make_stepper_text(period)))
+                .with_flex_child(make_settings_set_buttons(period), 1.0),
+            1.0,
+        );
+    tree
+}
+
+fn make_save_row() -> impl Widget<TomataState> {
+    let tree = Flex::row().with_child(Align::new(
+        UnitPoint::RIGHT,
+        Button::new("Save").on_click(move |_ctx, data: &mut TomataState, _env| {
+            data.serialize_settings("settings.json").unwrap()
+        }),
+    ));
+    tree
+}
+
+fn make_about_page() -> impl Widget<TomataState> {
+    let remaining_time_label = Label::new("About page!").with_text_size(32.0);
+    remaining_time_label
+}
+
+fn make_settings_page() -> impl Widget<TomataState> {
+    let tree = Flex::column()
+        .with_child(make_settings_row(Period::WorkPeriod))
+        .with_child(make_settings_row(Period::ShortBreak))
+        .with_child(make_settings_row(Period::LongBreak))
+        .with_child(make_save_row());
+    tree
 }
