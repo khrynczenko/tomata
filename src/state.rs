@@ -57,10 +57,6 @@ impl TomataState {
         self.activate_period(self.current_period);
     }
 
-    pub fn get_settings(&self) -> &Settings {
-        &self.settings
-    }
-
     pub fn cycle_to_next_period(&mut self) {
         match self.current_period {
             Period::Work => {
@@ -96,61 +92,6 @@ impl TomataState {
         if period_duration <= *self.elapsed_time {
             self.period_finished = true;
         }
-    }
-
-    pub fn increase_period_duration(&mut self, period: Period, value: Duration) {
-        match period {
-            Period::Work => self.settings.work_period = Rc::new(*self.settings.work_period + value),
-            Period::ShortBreak => {
-                self.settings.short_break_period =
-                    Rc::new(*self.settings.short_break_period + value)
-            }
-            Period::LongBreak => {
-                self.settings.long_break_period = Rc::new(*self.settings.long_break_period + value)
-            }
-        }
-    }
-
-    pub fn decrease_period_duration(&mut self, period: Period, value: Duration) {
-        match period {
-            Period::Work => {
-                let current_period_duration = &self.settings.work_period;
-                if value > **current_period_duration {
-                    self.settings.work_period = Rc::new(Duration::from_secs(0));
-                    return;
-                } else {
-                    self.settings.work_period = Rc::new(*self.settings.work_period - value)
-                }
-            }
-            Period::ShortBreak => {
-                let current_period_duration = &self.settings.short_break_period;
-                if value > **current_period_duration {
-                    self.settings.short_break_period = Rc::new(Duration::from_secs(0));
-                    return;
-                } else {
-                    self.settings.short_break_period =
-                        Rc::new(*self.settings.short_break_period - value)
-                }
-            }
-            Period::LongBreak => {
-                let current_period_duration = &self.settings.long_break_period;
-                if value > **current_period_duration {
-                    self.settings.long_break_period = Rc::new(Duration::from_secs(0));
-                    return;
-                } else {
-                    self.settings.long_break_period =
-                        Rc::new(*self.settings.long_break_period - value)
-                }
-            }
-        }
-    }
-
-    pub fn increase_short_breaks_number(&mut self, value: usize) {
-        self.settings.increase_short_breaks_number(value);
-    }
-
-    pub fn decrease_short_breaks_number(&mut self, value: usize) {
-        self.settings.decrease_short_breaks_number(value);
     }
 
     pub fn calculate_remaining_time(&self) -> Duration {

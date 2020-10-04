@@ -191,9 +191,10 @@ fn make_period_name_label(period: Period) -> impl Widget<TomataState> {
 }
 
 fn make_period_value_label(period: Period) -> impl Widget<TomataState> {
-    Label::new(move |data: &TomataState, _env: &_| {
-        tomata::duration_to_string(&data.get_settings().convert_period_to_duration(period))
-    })
+    let label = Label::new(move |data: &Settings, _env: &_| {
+        tomata::duration_to_string(&data.convert_period_to_duration(period))
+    });
+    LensWrap::new(label, TomataState::settings)
 }
 
 fn make_period_adjustment_buttons(period: Period) -> impl Widget<TomataState> {
@@ -244,19 +245,19 @@ fn make_short_breaks_number_before_long_break() -> impl Widget<TomataState> {
 
 fn make_short_breaks_adjustment_buttons() -> impl Widget<TomataState> {
     let plus_button = Button::new("+")
-        .on_click(move |_ctx, data: &mut TomataState, _env| {
+        .on_click(move |_ctx, data: &mut Settings, _env| {
             data.increase_short_breaks_number(1);
         })
         .expand_width();
     let minus_button = Button::new("-")
-        .on_click(move |_ctx, data: &mut TomataState, _env| {
+        .on_click(move |_ctx, data: &mut Settings, _env| {
             data.decrease_short_breaks_number(1);
         })
         .expand_width();
     Flex::row().with_child(
         Flex::column()
-            .with_child(plus_button)
-            .with_child(minus_button)
+            .with_child(LensWrap::new(plus_button, TomataState::settings))
+            .with_child(LensWrap::new(minus_button, TomataState::settings))
             .fix_width(50.0),
     )
 }
@@ -297,8 +298,8 @@ fn make_period_adjusting_button(
         Sign::Minus => '-',
     };
     let adjustment_method = match sign {
-        Sign::Plus => TomataState::increase_period_duration,
-        Sign::Minus => TomataState::decrease_period_duration,
+        Sign::Plus => Settings::increase_period_duration,
+        Sign::Minus => Settings::decrease_period_duration,
     };
     let change_char: char = match change {
         Change::Hour => 'h',
@@ -311,9 +312,8 @@ fn make_period_adjusting_button(
         Change::Second => Duration::from_secs(SECOND_S),
     };
     let button_text: String = [sign_char, '1', change_char].iter().collect();
-    Button::new(button_text)
-        .on_click(move |_ctx, data: &mut TomataState, _env| {
-            adjustment_method(data, period, duration)
-        })
-        .expand_width()
+    let button = Button::new(button_text)
+        .on_click(move |_ctx, data: &mut Settings, _env| adjustment_method(data, period, duration))
+        .expand_width();
+    LensWrap::new(button, TomataState::settings)
 }

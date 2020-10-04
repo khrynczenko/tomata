@@ -36,11 +36,45 @@ impl Default for Settings {
 }
 
 impl Settings {
-    pub fn convert_period_to_duration(&self, period: Period) -> Duration {
+    pub fn increase_period_duration(&mut self, period: Period, value: Duration) {
         match period {
-            Period::Work => *self.work_period,
-            Period::ShortBreak => *self.short_break_period,
-            Period::LongBreak => *self.long_break_period,
+            Period::Work => self.work_period = Rc::new(*self.work_period + value),
+            Period::ShortBreak => {
+                self.short_break_period = Rc::new(*self.short_break_period + value)
+            }
+            Period::LongBreak => self.long_break_period = Rc::new(*self.long_break_period + value),
+        }
+    }
+
+    pub fn decrease_period_duration(&mut self, period: Period, value: Duration) {
+        match period {
+            Period::Work => {
+                let current_period_duration = &self.work_period;
+                if value > **current_period_duration {
+                    self.work_period = Rc::new(Duration::from_secs(0));
+                    return;
+                } else {
+                    self.work_period = Rc::new(*self.work_period - value)
+                }
+            }
+            Period::ShortBreak => {
+                let current_period_duration = &self.short_break_period;
+                if value > **current_period_duration {
+                    self.short_break_period = Rc::new(Duration::from_secs(0));
+                    return;
+                } else {
+                    self.short_break_period = Rc::new(*self.short_break_period - value)
+                }
+            }
+            Period::LongBreak => {
+                let current_period_duration = &self.long_break_period;
+                if value > **current_period_duration {
+                    self.long_break_period = Rc::new(Duration::from_secs(0));
+                    return;
+                } else {
+                    self.long_break_period = Rc::new(*self.long_break_period - value)
+                }
+            }
         }
     }
 
@@ -54,6 +88,14 @@ impl Settings {
             return;
         }
         self.short_breaks_number -= value;
+    }
+
+    pub fn convert_period_to_duration(&self, period: Period) -> Duration {
+        match period {
+            Period::Work => *self.work_period,
+            Period::ShortBreak => *self.short_break_period,
+            Period::LongBreak => *self.long_break_period,
+        }
     }
 }
 
@@ -81,6 +123,69 @@ pub fn save_settings_to_file(settings: &Settings, path: impl AsRef<Path>) -> io:
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn increasing_work_period_duration() {
+        let mut settings = Settings::default();
+        let pre_change = *settings.work_period;
+        settings.increase_period_duration(Period::Work, Duration::from_secs(10));
+        let post_change = *settings.work_period;
+        assert_eq!(pre_change + Duration::from_secs(10), post_change);
+    }
+
+    #[test]
+    fn decreasing_work_period_duration() {
+        let mut settings = Settings::default();
+        let pre_change = *settings.work_period;
+        settings.decrease_period_duration(Period::Work, Duration::from_secs(10));
+        let post_change = *settings.work_period;
+        assert_eq!(pre_change - Duration::from_secs(10), post_change);
+    }
+
+    #[test]
+    fn increasing_short_break_period_duration() {
+        let mut settings = Settings::default();
+        let pre_change = *settings.short_break_period;
+        settings.increase_period_duration(Period::ShortBreak, Duration::from_secs(10));
+        let post_change = *settings.short_break_period;
+        assert_eq!(pre_change + Duration::from_secs(10), post_change);
+    }
+
+    #[test]
+    fn decreasing_short_break_period_duration() {
+        let mut settings = Settings::default();
+        let pre_change = *settings.short_break_period;
+        settings.decrease_period_duration(Period::ShortBreak, Duration::from_secs(10));
+        let post_change = *settings.short_break_period;
+        assert_eq!(pre_change - Duration::from_secs(10), post_change);
+    }
+
+    #[test]
+    fn increasing_long_break_period_duration() {
+        let mut settings = Settings::default();
+        let pre_change = *settings.long_break_period;
+        settings.increase_period_duration(Period::LongBreak, Duration::from_secs(10));
+        let post_change = *settings.long_break_period;
+        assert_eq!(pre_change + Duration::from_secs(10), post_change);
+    }
+
+    #[test]
+    fn decreasing_long_break_period_duration() {
+        let mut settings = Settings::default();
+        let pre_change = *settings.long_break_period;
+        settings.decrease_period_duration(Period::LongBreak, Duration::from_secs(10));
+        let post_change = *settings.long_break_period;
+        assert_eq!(pre_change - Duration::from_secs(10), post_change);
+    }
+
+    #[test]
+    fn decreasing_period_duration_below_zero() {
+        let mut settings = Settings::default();
+        settings.long_break_period = Rc::new(Duration::from_secs(1));
+        settings.decrease_period_duration(Period::LongBreak, Duration::from_secs(10));
+        let post_change = *settings.long_break_period;
+        assert_eq!(Duration::from_secs(0), post_change);
+    }
 
     #[test]
     fn increasing_short_breaks_number() {
