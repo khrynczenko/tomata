@@ -23,7 +23,7 @@ pub struct Settings {
     long_break_period: Rc<Duration>,
     short_breaks_number: usize,
     long_breaks_are_active: bool,
-    next_period_starts_automatically: bool
+    next_period_starts_automatically: bool,
 }
 
 impl Default for Settings {

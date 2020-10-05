@@ -140,7 +140,10 @@ mod tests {
         let mut state = TomataState::default();
         state.activate_period(Period::Work);
         assert_eq!(state.current_period, Period::Work);
-        assert_eq!(state.paused, !state.settings.does_next_period_start_automatically());
+        assert_eq!(
+            state.paused,
+            !state.settings.does_next_period_start_automatically()
+        );
         assert_eq!(*state.elapsed_time, ZERO);
     }
 
@@ -149,7 +152,10 @@ mod tests {
         let mut state = TomataState::default();
         state.activate_period(Period::ShortBreak);
         assert_eq!(state.current_period, Period::ShortBreak);
-        assert_eq!(state.paused, !state.settings.does_next_period_start_automatically());
+        assert_eq!(
+            state.paused,
+            !state.settings.does_next_period_start_automatically()
+        );
         assert_eq!(*state.elapsed_time, ZERO);
     }
 
@@ -158,7 +164,10 @@ mod tests {
         let mut state = TomataState::default();
         state.activate_period(Period::LongBreak);
         assert_eq!(state.current_period, Period::LongBreak);
-        assert_eq!(state.paused, !state.settings.does_next_period_start_automatically());
+        assert_eq!(
+            state.paused,
+            !state.settings.does_next_period_start_automatically()
+        );
         assert_eq!(*state.elapsed_time, ZERO);
     }
 
