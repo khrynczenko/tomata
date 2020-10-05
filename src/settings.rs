@@ -23,6 +23,7 @@ pub struct Settings {
     long_break_period: Rc<Duration>,
     short_breaks_number: usize,
     long_breaks_are_active: bool,
+    next_period_starts_automatically: bool
 }
 
 impl Default for Settings {
@@ -33,6 +34,7 @@ impl Default for Settings {
             long_break_period: Rc::new(Duration::from_secs(EIGHT_MINUTES)),
             short_breaks_number: DEFAULT_SHORT_BREAKS_BEFORE_LONG_BREAK,
             long_breaks_are_active: true,
+            next_period_starts_automatically: false,
         }
     }
 }
@@ -98,6 +100,10 @@ impl Settings {
 
     pub fn are_long_breaks_active(&self) -> bool {
         self.long_breaks_are_active
+    }
+
+    pub fn does_next_period_start_automatically(&self) -> bool {
+        self.next_period_starts_automatically
     }
 
     pub fn convert_period_to_duration(&self, period: Period) -> Duration {

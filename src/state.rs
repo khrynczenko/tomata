@@ -83,9 +83,13 @@ impl TomataState {
 
     pub fn activate_period(&mut self, period: Period) {
         self.current_period = period;
-        self.paused = true;
         self.period_finished = false;
         self.elapsed_time = Rc::new(ZERO);
+        if self.settings.does_next_period_start_automatically() {
+            self.paused = false;
+        } else {
+            self.paused = true;
+        }
     }
 
     pub fn increase_elapsed_time(&mut self, value: Duration) {
@@ -136,7 +140,7 @@ mod tests {
         let mut state = TomataState::default();
         state.activate_period(Period::Work);
         assert_eq!(state.current_period, Period::Work);
-        assert_eq!(state.paused, true);
+        assert_eq!(state.paused, !state.settings.does_next_period_start_automatically());
         assert_eq!(*state.elapsed_time, ZERO);
     }
 
@@ -145,7 +149,7 @@ mod tests {
         let mut state = TomataState::default();
         state.activate_period(Period::ShortBreak);
         assert_eq!(state.current_period, Period::ShortBreak);
-        assert_eq!(state.paused, true);
+        assert_eq!(state.paused, !state.settings.does_next_period_start_automatically());
         assert_eq!(*state.elapsed_time, ZERO);
     }
 
@@ -154,7 +158,7 @@ mod tests {
         let mut state = TomataState::default();
         state.activate_period(Period::LongBreak);
         assert_eq!(state.current_period, Period::LongBreak);
-        assert_eq!(state.paused, true);
+        assert_eq!(state.paused, !state.settings.does_next_period_start_automatically());
         assert_eq!(*state.elapsed_time, ZERO);
     }
 

@@ -166,6 +166,7 @@ fn make_settings_window_widget_tree() -> impl Widget<TomataState> {
         .with_child(make_period_adjustment_row(Period::LongBreak))
         .with_child(make_short_breaks_number_adjustment_row())
         .with_child(make_long_break_adjustment_row())
+        .with_child(make_next_period_starts_automatically_adjustment_row())
         .with_child(make_save_row());
     tree
 }
@@ -271,7 +272,17 @@ fn make_long_break_adjustment_row() -> impl Widget<TomataState> {
     let row = Flex::row()
         .with_child(description_label)
         .with_child(Align::right(switch));
-    //.with_flex_child(make_short_breaks_adjustment_buttons(), 1.0),
+    row
+}
+
+fn make_next_period_starts_automatically_adjustment_row() -> impl Widget<TomataState> {
+    let description_label = Label::new("Start next period automatically:");
+    let switch = Switch::new();
+    let switch = LensWrap::new(switch, Settings::next_period_starts_automatically);
+    let switch = LensWrap::new(switch, TomataState::settings);
+    let row = Flex::row()
+        .with_child(description_label)
+        .with_child(Align::right(switch));
     row
 }
 
