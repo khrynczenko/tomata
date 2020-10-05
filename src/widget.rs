@@ -266,7 +266,7 @@ fn make_short_breaks_adjustment_buttons() -> impl Widget<TomataState> {
 fn make_long_break_adjustment_row() -> impl Widget<TomataState> {
     let description_label = Label::new("Use long breaks:");
     let switch = Switch::new();
-    let switch = LensWrap::new(switch, Settings::long_breaks_active);
+    let switch = LensWrap::new(switch, Settings::long_breaks_are_active);
     let switch = LensWrap::new(switch, TomataState::settings);
     let row = Flex::row()
         .with_child(description_label)
