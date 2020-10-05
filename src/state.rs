@@ -60,10 +60,14 @@ impl TomataState {
     pub fn cycle_to_next_period(&mut self) {
         match self.current_period {
             Period::Work => {
-                if self.short_breaks_finished == self.settings.short_breaks_number {
+                if self.short_breaks_finished == self.settings.get_short_breaks_number()
+                    && self.settings.are_long_breaks_active()
+                {
                     self.activate_period(Period::LongBreak);
-                } else {
+                } else if self.settings.get_short_breaks_number() != 0 {
                     self.activate_period(Period::ShortBreak);
+                } else {
+                    self.activate_period(Period::Work);
                 }
             }
             Period::ShortBreak => {
@@ -157,7 +161,7 @@ mod tests {
     #[test]
     fn cycling_over_all_periods() {
         let mut state = TomataState::default();
-        let short_breaks_number = state.settings.short_breaks_number;
+        let short_breaks_number = state.settings.get_short_breaks_number();
         for _ in 0..short_breaks_number {
             assert_eq!(state.current_period, Period::Work);
             state.cycle_to_next_period();
@@ -165,9 +169,11 @@ mod tests {
             state.cycle_to_next_period();
         }
         assert_eq!(state.current_period, Period::Work);
-        state.cycle_to_next_period();
-        assert_eq!(state.current_period, Period::LongBreak);
-        state.cycle_to_next_period();
-        assert_eq!(state.current_period, Period::Work);
+        if state.settings.are_long_breaks_active() {
+            state.cycle_to_next_period();
+            assert_eq!(state.current_period, Period::LongBreak);
+            state.cycle_to_next_period();
+            assert_eq!(state.current_period, Period::Work);
+        }
     }
 }

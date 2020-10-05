@@ -18,10 +18,11 @@ const DEFAULT_SHORT_BREAKS_BEFORE_LONG_BREAK: usize = 3;
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, Data, Lens)]
 pub struct Settings {
-    pub work_period: Rc<Duration>,
-    pub short_break_period: Rc<Duration>,
-    pub long_break_period: Rc<Duration>,
-    pub short_breaks_number: usize,
+    work_period: Rc<Duration>,
+    short_break_period: Rc<Duration>,
+    long_break_period: Rc<Duration>,
+    short_breaks_number: usize,
+    long_breaks_active: bool,
 }
 
 impl Default for Settings {
@@ -31,6 +32,7 @@ impl Default for Settings {
             short_break_period: Rc::new(Duration::from_secs(FIVE_MINUTES)),
             long_break_period: Rc::new(Duration::from_secs(EIGHT_MINUTES)),
             short_breaks_number: DEFAULT_SHORT_BREAKS_BEFORE_LONG_BREAK,
+            long_breaks_active: true,
         }
     }
 }
@@ -78,6 +80,10 @@ impl Settings {
         }
     }
 
+    pub fn get_short_breaks_number(&self) -> usize {
+        self.short_breaks_number
+    }
+
     pub fn increase_short_breaks_number(&mut self, value: usize) {
         self.short_breaks_number += value;
     }
@@ -88,6 +94,10 @@ impl Settings {
             return;
         }
         self.short_breaks_number -= value;
+    }
+
+    pub fn are_long_breaks_active(&self) -> bool {
+        self.long_breaks_active
     }
 
     pub fn convert_period_to_duration(&self, period: Period) -> Duration {
@@ -188,6 +198,13 @@ mod tests {
     }
 
     #[test]
+    fn getting_short_breaks_number() {
+        let mut settings = Settings::default();
+        settings.short_breaks_number = 2;
+        assert_eq!(2, settings.get_short_breaks_number());
+    }
+
+    #[test]
     fn increasing_short_breaks_number() {
         let mut settings = Settings::default();
         let pre_change = settings.short_breaks_number;
@@ -205,5 +222,12 @@ mod tests {
         assert_eq!(0, settings.short_breaks_number);
         settings.decrease_short_breaks_number(1);
         assert_eq!(0, settings.short_breaks_number);
+    }
+
+    #[test]
+    fn checking_if_long_breaks_are_active() {
+        let settings = Settings::default();
+        let actual = settings.long_breaks_active;
+        assert_eq!(actual, settings.are_long_breaks_active());
     }
 }
