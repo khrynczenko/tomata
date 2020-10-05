@@ -15,7 +15,7 @@ intervals for work period, short break, logn break and more options.
 - [x] Reset
 - [x] Configurable length for all the intervals
 - [x] Configurable number (work -> short break) intervals before long break
-- [ ] Option to disable long break
+- [x] Option to disable long break
 - [ ] Option to automatically start next period
 - [ ] System notification when
 - [ ] Option to disable/enable system notifications on finish/launch
