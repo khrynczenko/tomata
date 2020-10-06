@@ -22,7 +22,7 @@ pub struct Settings {
     short_break_period: Rc<Duration>,
     long_break_period: Rc<Duration>,
     short_breaks_number: usize,
-    long_breaks_are_active: bool,
+    long_breaks_are_included: bool,
     next_period_starts_automatically: bool,
 }
 
@@ -33,7 +33,7 @@ impl Default for Settings {
             short_break_period: Rc::new(Duration::from_secs(FIVE_MINUTES)),
             long_break_period: Rc::new(Duration::from_secs(EIGHT_MINUTES)),
             short_breaks_number: DEFAULT_SHORT_BREAKS_BEFORE_LONG_BREAK,
-            long_breaks_are_active: true,
+            long_breaks_are_included: true,
             next_period_starts_automatically: false,
         }
     }
@@ -98,8 +98,8 @@ impl Settings {
         self.short_breaks_number -= value;
     }
 
-    pub fn are_long_breaks_active(&self) -> bool {
-        self.long_breaks_are_active
+    pub fn are_long_breaks_included(&self) -> bool {
+        self.long_breaks_are_included
     }
 
     pub fn does_next_period_start_automatically(&self) -> bool {
@@ -233,7 +233,7 @@ mod tests {
     #[test]
     fn checking_if_long_breaks_are_active() {
         let settings = Settings::default();
-        let actual = settings.long_breaks_are_active;
-        assert_eq!(actual, settings.are_long_breaks_active());
+        let actual = settings.long_breaks_are_included;
+        assert_eq!(actual, settings.are_long_breaks_included());
     }
 }

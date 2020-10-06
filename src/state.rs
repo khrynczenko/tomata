@@ -61,7 +61,7 @@ impl TomataState {
         match self.current_period {
             Period::Work => {
                 if self.short_breaks_finished == self.settings.get_short_breaks_number()
-                    && self.settings.are_long_breaks_active()
+                    && self.settings.are_long_breaks_included()
                 {
                     self.activate_period(Period::LongBreak);
                 } else if self.settings.get_short_breaks_number() != 0 {
@@ -182,7 +182,7 @@ mod tests {
             state.cycle_to_next_period();
         }
         assert_eq!(state.current_period, Period::Work);
-        if state.settings.are_long_breaks_active() {
+        if state.settings.are_long_breaks_included() {
             state.cycle_to_next_period();
             assert_eq!(state.current_period, Period::LongBreak);
             state.cycle_to_next_period();
