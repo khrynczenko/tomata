@@ -24,6 +24,7 @@ pub struct Settings {
     short_breaks_number: usize,
     long_breaks_are_included: bool,
     next_period_starts_automatically: bool,
+    system_notifications_are_enabled: bool,
 }
 
 impl Default for Settings {
@@ -35,6 +36,7 @@ impl Default for Settings {
             short_breaks_number: DEFAULT_SHORT_BREAKS_BEFORE_LONG_BREAK,
             long_breaks_are_included: true,
             next_period_starts_automatically: false,
+            system_notifications_are_enabled: true,
         }
     }
 }
