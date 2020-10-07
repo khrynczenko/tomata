@@ -2,6 +2,7 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use druid::{Data, Lens};
+use notify_rust::Notification;
 
 use crate::settings::Settings;
 use crate::tomata::{Period, ZERO};
@@ -82,6 +83,7 @@ impl TomataState {
     }
 
     pub fn activate_period(&mut self, period: Period) {
+        Notification::from(period).show().unwrap();
         self.current_period = period;
         self.period_finished = false;
         self.elapsed_time = Rc::new(ZERO);

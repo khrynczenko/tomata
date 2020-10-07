@@ -17,7 +17,7 @@ intervals for work period, short break, logn break and more options.
 - [x] Configurable number (work -> short break) intervals before long break
 - [x] Option to disable long break
 - [x] Option to automatically start next period
-- [ ] System notification when
+- [x] System notification when new period begins
 - [ ] Option to disable/enable system notifications on finish/launch
      of the next period.
 - [ ] Beeping sound when indicating finishing period

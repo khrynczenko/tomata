@@ -1,6 +1,7 @@
 use std::time::Duration;
 
 use druid::Data;
+use notify_rust::Notification;
 
 pub const APPLICATION_NAME: &str = "tomata";
 pub const WINDOW_SIZE_PX: (f64, f64) = (250.0, 250.0);
@@ -16,6 +17,28 @@ pub enum Period {
     Work,
     ShortBreak,
     LongBreak,
+}
+
+impl From<Period> for Notification {
+    fn from(period: Period) -> Notification {
+        match period {
+            Period::Work => Notification::new()
+                .appname("tomata")
+                .summary("Work period.")
+                .body("Concentrate on the work you ought to.")
+                .clone(),
+            Period::ShortBreak => Notification::new()
+                .appname("tomata")
+                .summary("Short break.")
+                .body("Stretch out, calm your mind, look into distance.")
+                .clone(),
+            Period::LongBreak => Notification::new()
+                .appname("tomata")
+                .summary("Long break.")
+                .body("Take a walk, make a coffee, watch something interesting.")
+                .clone(),
+        }
+    }
 }
 
 pub fn duration_to_string(duration: &Duration) -> String {
