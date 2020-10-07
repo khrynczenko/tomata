@@ -42,6 +42,27 @@ impl Default for Settings {
 }
 
 impl Settings {
+    #[allow(dead_code)] // used in tests
+    pub fn new(
+        work_period: Duration,
+        short_break_period: Duration,
+        long_break_period: Duration,
+        short_breaks_number: usize,
+        long_breaks_are_included: bool,
+        next_period_starts_automatically: bool,
+        system_notifications_are_enabled: bool,
+    ) -> Settings {
+        Settings {
+            work_period: Rc::new(work_period),
+            short_break_period: Rc::new(short_break_period),
+            long_break_period: Rc::new(long_break_period),
+            short_breaks_number,
+            long_breaks_are_included,
+            next_period_starts_automatically,
+            system_notifications_are_enabled,
+        }
+    }
+
     pub fn increase_period_duration(&mut self, period: Period, value: Duration) {
         match period {
             Period::Work => self.work_period = Rc::new(*self.work_period + value),
@@ -106,6 +127,10 @@ impl Settings {
 
     pub fn does_next_period_start_automatically(&self) -> bool {
         self.next_period_starts_automatically
+    }
+
+    pub fn are_system_notifications_enabled(&self) -> bool {
+        self.system_notifications_are_enabled
     }
 
     pub fn convert_period_to_duration(&self, period: Period) -> Duration {

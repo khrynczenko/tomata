@@ -83,7 +83,6 @@ impl TomataState {
     }
 
     pub fn activate_period(&mut self, period: Period) {
-        Notification::from(period).show().unwrap();
         self.current_period = period;
         self.period_finished = false;
         self.elapsed_time = Rc::new(ZERO);
@@ -91,6 +90,10 @@ impl TomataState {
             self.paused = false;
         } else {
             self.paused = true;
+        }
+
+        if self.settings.are_system_notifications_enabled() {
+            Notification::from(period).show().unwrap();
         }
     }
 
@@ -120,10 +123,24 @@ mod tests {
     use super::*;
     use crate::tomata::HOUR_S;
 
+    fn make_default_test_state() -> TomataState {
+        // normal settings but with system notifications are disabled
+        let settings = Settings::new(
+            Duration::from_secs(1),
+            Duration::from_secs(1),
+            Duration::from_secs(1),
+            2,
+            true,
+            true,
+            false,
+        );
+        TomataState::new(settings)
+    }
+
     #[test]
     fn remaining_time_is_zero_when_elapsed_time_is_bigger_than_period_time() {
         let duration = Duration::from_secs(HOUR_S);
-        let mut state = TomataState::default();
+        let mut state = make_default_test_state();
         state.elapsed_time = Rc::new(duration);
         let remaining_time = state.calculate_remaining_time();
         assert_eq!(remaining_time, ZERO);
@@ -132,14 +149,14 @@ mod tests {
     #[test]
     fn increasing_elapsed_time() {
         let duration = Duration::from_secs(HOUR_S);
-        let mut state = TomataState::default();
+        let mut state = make_default_test_state();
         state.increase_elapsed_time(duration.clone());
         assert_eq!(*state.elapsed_time, duration);
     }
 
     #[test]
     fn activating_work_period() {
-        let mut state = TomataState::default();
+        let mut state = make_default_test_state();
         state.activate_period(Period::Work);
         assert_eq!(state.current_period, Period::Work);
         assert_eq!(
@@ -151,7 +168,7 @@ mod tests {
 
     #[test]
     fn activating_short_break() {
-        let mut state = TomataState::default();
+        let mut state = make_default_test_state();
         state.activate_period(Period::ShortBreak);
         assert_eq!(state.current_period, Period::ShortBreak);
         assert_eq!(
@@ -163,7 +180,7 @@ mod tests {
 
     #[test]
     fn activating_long_break() {
-        let mut state = TomataState::default();
+        let mut state = make_default_test_state();
         state.activate_period(Period::LongBreak);
         assert_eq!(state.current_period, Period::LongBreak);
         assert_eq!(
@@ -175,7 +192,7 @@ mod tests {
 
     #[test]
     fn cycling_over_all_periods() {
-        let mut state = TomataState::default();
+        let mut state = make_default_test_state();
         let short_breaks_number = state.settings.get_short_breaks_number();
         for _ in 0..short_breaks_number {
             assert_eq!(state.current_period, Period::Work);
