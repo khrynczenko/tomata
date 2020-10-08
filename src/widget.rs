@@ -148,7 +148,7 @@ fn make_main_window_widget_tree() -> impl Widget<TomataState> {
 fn make_settings_window() -> WindowDesc<TomataState> {
     WindowDesc::new(make_settings_window_widget_tree)
         .title(APPLICATION_NAME)
-        .window_size((420.0, 300.0))
+        .window_size((420.0, 340.0))
         .resizable(false)
 }
 
