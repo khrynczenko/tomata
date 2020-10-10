@@ -101,11 +101,12 @@ impl TomataState {
     pub fn increase_elapsed_time(&mut self, value: Duration) {
         #[cfg(not(test))] // BEEPER is not initialized in test confifuration
         // so it would panic without this
-        if self.calculate_remaining_time() <= Duration::from_secs(5) {
+        if self.is_period_finishing() && self.settings.is_period_ending_sound_enabled() {
             std::thread::spawn(|| {
                 BEEPER.get().unwrap().beep().unwrap();
             });
         }
+
         self.elapsed_time = Rc::new(*self.elapsed_time + value);
         let period_duration = self
             .settings
@@ -124,6 +125,10 @@ impl TomataState {
         }
         period_duration - *self.elapsed_time
     }
+
+    fn is_period_finishing(&self) -> bool {
+        self.calculate_remaining_time() <= Duration::from_secs(5)
+    }
 }
 
 #[cfg(test)]
@@ -140,6 +145,7 @@ mod tests {
             2,
             true,
             true,
+            false,
             false,
         );
         TomataState::new(settings)
@@ -215,5 +221,11 @@ mod tests {
             state.cycle_to_next_period();
             assert_eq!(state.current_period, Period::Work);
         }
+    }
+
+    #[test]
+    fn checking_if_period_is_finishing() {
+        let state = make_default_test_state();
+        assert!(state.is_period_finishing());
     }
 }

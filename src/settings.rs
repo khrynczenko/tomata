@@ -25,6 +25,7 @@ pub struct Settings {
     long_breaks_are_included: bool,
     next_period_starts_automatically: bool,
     system_notifications_are_enabled: bool,
+    period_ending_sound_is_enabled: bool,
 }
 
 impl Default for Settings {
@@ -37,6 +38,7 @@ impl Default for Settings {
             long_breaks_are_included: true,
             next_period_starts_automatically: false,
             system_notifications_are_enabled: true,
+            period_ending_sound_is_enabled: true,
         }
     }
 }
@@ -51,6 +53,7 @@ impl Settings {
         long_breaks_are_included: bool,
         next_period_starts_automatically: bool,
         system_notifications_are_enabled: bool,
+        period_ending_sound_is_enabled: bool,
     ) -> Settings {
         Settings {
             work_period: Rc::new(work_period),
@@ -60,6 +63,7 @@ impl Settings {
             long_breaks_are_included,
             next_period_starts_automatically,
             system_notifications_are_enabled,
+            period_ending_sound_is_enabled,
         }
     }
 
@@ -131,6 +135,10 @@ impl Settings {
 
     pub fn are_system_notifications_enabled(&self) -> bool {
         self.system_notifications_are_enabled
+    }
+
+    pub fn is_period_ending_sound_enabled(&self) -> bool {
+        self.period_ending_sound_is_enabled
     }
 
     pub fn convert_period_to_duration(&self, period: Period) -> Duration {
@@ -262,5 +270,12 @@ mod tests {
         let settings = Settings::default();
         let actual = settings.long_breaks_are_included;
         assert_eq!(actual, settings.are_long_breaks_included());
+    }
+
+    #[test]
+    fn checking_if_period_ending_sound_is_enabled() {
+        let settings = Settings::default();
+        let actual = settings.period_ending_sound_is_enabled;
+        assert_eq!(actual, settings.is_period_ending_sound_enabled());
     }
 }

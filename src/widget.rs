@@ -168,6 +168,7 @@ fn make_settings_window_widget_tree() -> impl Widget<TomataState> {
         .with_child(make_long_break_adjustment_row())
         .with_child(make_next_period_starts_automatically_adjustment_row())
         .with_child(make_system_notifications_adjustment_row())
+        .with_child(make_period_finishing_sound_adjustment_row())
         .with_child(make_save_row());
     tree
 }
@@ -291,6 +292,17 @@ fn make_system_notifications_adjustment_row() -> impl Widget<TomataState> {
     let description_label = Label::new("Use system notifications");
     let switch = Switch::new();
     let switch = LensWrap::new(switch, Settings::system_notifications_are_enabled);
+    let switch = LensWrap::new(switch, TomataState::settings);
+    let row = Flex::row()
+        .with_child(description_label)
+        .with_child(Align::right(switch));
+    row
+}
+
+fn make_period_finishing_sound_adjustment_row() -> impl Widget<TomataState> {
+    let description_label = Label::new("Use beeping sound when period is ending:");
+    let switch = Switch::new();
+    let switch = LensWrap::new(switch, Settings::period_ending_sound_is_enabled);
     let switch = LensWrap::new(switch, TomataState::settings);
     let row = Flex::row()
         .with_child(description_label)
