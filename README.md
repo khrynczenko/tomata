@@ -20,6 +20,6 @@ intervals for work period, short break, logn break and more options.
 - [x] System notification when new period begins
 - [x] Option to disable/enable system notifications on finish/launch
      of the next period.
-- [ ] Beeping sound when indicating finishing period
+- [x] Beeping sound when indicating period is about to end
 - [ ] Option to enable/disable beeping sound effect
 

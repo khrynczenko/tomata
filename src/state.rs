@@ -5,6 +5,7 @@ use druid::{Data, Lens};
 use notify_rust::Notification;
 
 use crate::settings::Settings;
+use crate::sound::BEEPER;
 use crate::tomata::{Period, ZERO};
 
 #[derive(Debug, Clone, Data, Lens)]
@@ -98,6 +99,13 @@ impl TomataState {
     }
 
     pub fn increase_elapsed_time(&mut self, value: Duration) {
+        #[cfg(not(test))] // BEEPER is not initialized in test confifuration
+        // so it would panic without this
+        if self.calculate_remaining_time() <= Duration::from_secs(5) {
+            std::thread::spawn(|| {
+                BEEPER.get().unwrap().beep().unwrap();
+            });
+        }
         self.elapsed_time = Rc::new(*self.elapsed_time + value);
         let period_duration = self
             .settings

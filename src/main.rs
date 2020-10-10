@@ -1,4 +1,5 @@
 mod settings;
+mod sound;
 mod state;
 mod tomata;
 mod widget;
@@ -7,6 +8,7 @@ use druid::{AppLauncher, MenuItem, PlatformError, Selector, WindowDesc};
 use druid::{LocalizedString, MenuDesc};
 
 use settings::Settings;
+use sound::{SoundSystem, BEEPER};
 use state::TomataState;
 use tomata::WINDOW_SIZE_PX;
 use widget::TomataApp;
@@ -32,6 +34,7 @@ fn main() -> Result<(), PlatformError> {
         .title("tomata")
         .window_size(WINDOW_SIZE_PX)
         .resizable(false);
+    BEEPER.set(SoundSystem::default()).unwrap();
 
     let from_file_result = settings::load_settings_from_file("settings.json");
     let settings = if from_file_result.is_some() {
