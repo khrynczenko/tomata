@@ -26,8 +26,8 @@ impl Default for TomataState {
         let elapsed_time = Rc::new(ZERO);
         let settings = Settings::default();
         TomataState {
-            settings: settings.clone(),
-            elapsed_time: elapsed_time.clone(),
+            settings,
+            elapsed_time,
             current_period: Period::Work,
             stopwatch_is_paused: true,
             period_is_finished: false,
