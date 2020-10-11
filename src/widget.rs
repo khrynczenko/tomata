@@ -6,6 +6,7 @@ use druid::{
     UnitPoint, UpdateCtx, WidgetExt,
 };
 use druid::{Env, TimerToken, Widget};
+use once_cell::sync::Lazy;
 
 use crate::settings;
 use crate::settings::Settings;
@@ -13,11 +14,7 @@ use crate::state::TomataState;
 use crate::tomata;
 use crate::tomata::{Period, HOUR_S, MINUTE_S, SECOND_S};
 
-// const TICK_INTERVAL: Duration = Duration::new(ZERO_SECONDS, ONE_THOUSAND_NANOSECONDS);
-// `Duration::new` is not a `const` yet so this function would suffice for now
-fn make_tick_interval() -> Duration {
-    Duration::from_secs(SECOND_S)
-}
+static TICK_INTERVAL: Lazy<Duration> = Lazy::new(|| Duration::from_secs(1));
 
 pub struct TomataApp {
     timer_id: TimerToken,
@@ -37,17 +34,17 @@ impl Widget<TomataState> for TomataApp {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut TomataState, env: &Env) {
         match event {
             Event::WindowConnected => {
-                self.timer_id = ctx.request_timer(make_tick_interval());
+                self.timer_id = ctx.request_timer(*TICK_INTERVAL);
             }
             Event::Timer(id) => {
                 if *id == self.timer_id {
                     if !data.is_stopwatch_paused() {
-                        data.increase_elapsed_time(make_tick_interval());
+                        data.increase_elapsed_time(*TICK_INTERVAL);
                     }
                     if data.is_period_finished() {
                         data.cycle_to_next_period();
                     }
-                    self.timer_id = ctx.request_timer(make_tick_interval());
+                    self.timer_id = ctx.request_timer(*TICK_INTERVAL);
                 }
             }
             _ => {}

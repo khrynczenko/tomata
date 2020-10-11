@@ -62,11 +62,9 @@ impl TomataState {
     pub fn cycle_to_next_period(&mut self) {
         match self.current_period {
             Period::Work => {
-                if self.short_breaks_finished == self.settings.get_short_breaks_number()
-                    && self.settings.are_long_breaks_included()
-                {
+                if self.is_long_break_next() {
                     self.activate_period(Period::LongBreak);
-                } else if self.settings.get_short_breaks_number() != 0 {
+                } else if self.settings.get_short_breaks_number() > 0 {
                     self.activate_period(Period::ShortBreak);
                 } else {
                     self.activate_period(Period::Work);
@@ -126,6 +124,11 @@ impl TomataState {
 
     fn is_period_finishing(&self) -> bool {
         self.calculate_remaining_time() <= Duration::from_secs(5)
+    }
+
+    fn is_long_break_next(&self) -> bool {
+        self.short_breaks_finished == self.settings.get_short_breaks_number()
+            && self.settings.are_long_breaks_included()
     }
 }
 

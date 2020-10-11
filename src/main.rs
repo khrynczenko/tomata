@@ -19,9 +19,9 @@ fn main() -> Result<(), PlatformError> {
         .resizable(false);
     BEEPER.set(SoundSystem::default()).unwrap();
 
-    let from_file_result = settings::load_settings_from_file("settings.json");
-    let settings = if from_file_result.is_some() {
-        from_file_result.unwrap()
+    let settings_result = settings::load_settings_from_file("settings.json");
+    let settings = if settings_result.is_some() {
+        settings_result.unwrap()
     } else {
         let settings = Settings::default();
         settings::save_settings_to_file(&settings, "settings.json").expect(&format!(
