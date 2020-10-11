@@ -13,8 +13,8 @@ pub struct TomataState {
     settings: Settings,
     elapsed_time: Rc<Duration>,
     current_period: Period,
-    paused: bool,
-    period_finished: bool,
+    stopwatch_is_paused: bool,
+    period_is_finished: bool,
     short_breaks_finished: usize,
 }
 
@@ -26,8 +26,8 @@ impl Default for TomataState {
             settings: settings.clone(),
             elapsed_time: elapsed_time.clone(),
             current_period: Period::Work,
-            paused: true,
-            period_finished: false,
+            stopwatch_is_paused: true,
+            period_is_finished: false,
             short_breaks_finished: 0,
         }
     }
@@ -39,23 +39,23 @@ impl TomataState {
         state.settings = settings;
         state
     }
-    pub fn is_paused(&self) -> bool {
-        self.paused
+    pub fn is_stopwatch_paused(&self) -> bool {
+        self.stopwatch_is_paused
     }
 
-    pub fn is_finished(&self) -> bool {
-        self.period_finished
+    pub fn is_period_finished(&self) -> bool {
+        self.period_is_finished
     }
 
-    pub fn start(&mut self) {
-        self.paused = false;
+    pub fn start_stopwatch(&mut self) {
+        self.stopwatch_is_paused = false;
     }
 
-    pub fn pause(&mut self) {
-        self.paused = true;
+    pub fn pause_stopwatch(&mut self) {
+        self.stopwatch_is_paused = true;
     }
 
-    pub fn reset(&mut self) {
+    pub fn reset_stopwatch(&mut self) {
         self.activate_period(self.current_period);
     }
 
@@ -85,12 +85,12 @@ impl TomataState {
 
     pub fn activate_period(&mut self, period: Period) {
         self.current_period = period;
-        self.period_finished = false;
+        self.period_is_finished = false;
         self.elapsed_time = Rc::new(ZERO);
         if self.settings.does_next_period_start_automatically() {
-            self.paused = false;
+            self.stopwatch_is_paused = false;
         } else {
-            self.paused = true;
+            self.stopwatch_is_paused = true;
         }
 
         if self.settings.are_system_notifications_enabled() {
@@ -99,8 +99,6 @@ impl TomataState {
     }
 
     pub fn increase_elapsed_time(&mut self, value: Duration) {
-        #[cfg(not(test))] // BEEPER is not initialized in test confifuration
-        // so it would panic without this
         if self.is_period_finishing() && self.settings.is_period_ending_sound_enabled() {
             std::thread::spawn(|| {
                 BEEPER.get().unwrap().beep().unwrap();
@@ -112,7 +110,7 @@ impl TomataState {
             .settings
             .convert_period_to_duration(self.current_period);
         if period_duration <= *self.elapsed_time {
-            self.period_finished = true;
+            self.period_is_finished = true;
         }
     }
 
@@ -145,8 +143,9 @@ mod tests {
             2,
             true,
             true,
-            false,
-            false,
+            false, // during tests we don't want the system notifications
+            // running
+            false, // during tests we don't want the beep sound effect
         );
         TomataState::new(settings)
     }
@@ -174,7 +173,7 @@ mod tests {
         state.activate_period(Period::Work);
         assert_eq!(state.current_period, Period::Work);
         assert_eq!(
-            state.paused,
+            state.stopwatch_is_paused,
             !state.settings.does_next_period_start_automatically()
         );
         assert_eq!(*state.elapsed_time, ZERO);
@@ -186,7 +185,7 @@ mod tests {
         state.activate_period(Period::ShortBreak);
         assert_eq!(state.current_period, Period::ShortBreak);
         assert_eq!(
-            state.paused,
+            state.stopwatch_is_paused,
             !state.settings.does_next_period_start_automatically()
         );
         assert_eq!(*state.elapsed_time, ZERO);
@@ -198,7 +197,7 @@ mod tests {
         state.activate_period(Period::LongBreak);
         assert_eq!(state.current_period, Period::LongBreak);
         assert_eq!(
-            state.paused,
+            state.stopwatch_is_paused,
             !state.settings.does_next_period_start_automatically()
         );
         assert_eq!(*state.elapsed_time, ZERO);

@@ -50,10 +50,10 @@ impl Widget<TomataState> for TomataApp {
             }
             Event::Timer(id) => {
                 if *id == self.timer_id {
-                    if !data.is_paused() {
+                    if !data.is_stopwatch_paused() {
                         data.increase_elapsed_time(make_tick_interval());
                     }
-                    if data.is_finished() {
+                    if data.is_period_finished() {
                         data.cycle_to_next_period();
                     }
                     self.timer_id = ctx.request_timer(make_tick_interval());
@@ -109,13 +109,13 @@ fn make_main_window_widget_tree() -> impl Widget<TomataState> {
     .with_text_size(32.0);
 
     let start_button =
-        Button::new("Start").on_click(|_ctx, data: &mut TomataState, _env| data.start());
+        Button::new("Start").on_click(|_ctx, data: &mut TomataState, _env| data.start_stopwatch());
 
     let pause_button =
-        Button::new("Pause").on_click(|_ctx, data: &mut TomataState, _env| data.pause());
+        Button::new("Pause").on_click(|_ctx, data: &mut TomataState, _env| data.pause_stopwatch());
 
     let reset_button =
-        Button::new("Reset").on_click(|_ctx, data: &mut TomataState, _env| data.reset());
+        Button::new("Reset").on_click(|_ctx, data: &mut TomataState, _env| data.reset_stopwatch());
 
     let work_period_button = Button::new("Work")
         .on_click(|_ctx, data: &mut TomataState, _env| data.activate_period(Period::Work));
