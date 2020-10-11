@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use druid::widget::{Align, Button, Flex, Label, Switch};
+use druid::widget::{Align, Button, Flex, Label, Padding, Switch};
 use druid::{
     BoxConstraints, Event, EventCtx, LayoutCtx, LensWrap, LifeCycle, LifeCycleCtx, PaintCtx, Size,
     UnitPoint, UpdateCtx, WidgetExt,
@@ -160,16 +160,28 @@ fn make_about_window() -> WindowDesc<TomataState> {
 }
 
 fn make_settings_window_widget_tree() -> impl Widget<TomataState> {
-    let tree = Flex::column()
-        .with_child(make_period_adjustment_row(Period::Work))
-        .with_child(make_period_adjustment_row(Period::ShortBreak))
-        .with_child(make_period_adjustment_row(Period::LongBreak))
-        .with_child(make_short_breaks_number_adjustment_row())
-        .with_child(make_long_break_adjustment_row())
-        .with_child(make_next_period_starts_automatically_adjustment_row())
-        .with_child(make_system_notifications_adjustment_row())
-        .with_child(make_period_finishing_sound_adjustment_row())
-        .with_child(make_save_row());
+    let tree = Padding::new(
+        2.0,
+        Flex::column()
+            .with_child(make_period_adjustment_row(Period::Work))
+            .with_spacer(3.0)
+            .with_child(make_period_adjustment_row(Period::ShortBreak))
+            .with_spacer(3.0)
+            .with_child(make_period_adjustment_row(Period::LongBreak))
+            .with_spacer(3.0)
+            .with_child(make_short_breaks_number_adjustment_row())
+            .with_spacer(3.0)
+            .with_child(make_long_break_adjustment_row())
+            .with_spacer(3.0)
+            .with_child(make_next_period_starts_automatically_adjustment_row())
+            .with_spacer(3.0)
+            .with_child(make_system_notifications_adjustment_row())
+            .with_spacer(3.0)
+            .with_child(make_period_finishing_sound_adjustment_row())
+            .with_spacer(3.0)
+            .with_child(make_save_row())
+            .with_spacer(3.0),
+    );
     tree
 }
 
@@ -179,7 +191,7 @@ fn make_period_adjustment_row(period: Period) -> impl Widget<TomataState> {
         .with_flex_child(
             Flex::row()
                 .with_child(Align::right(make_period_value_label(period)))
-                .with_flex_child(make_period_adjustment_buttons(period), 1.0),
+                .with_flex_child(Align::right(make_period_adjustment_buttons(period)), 1.0),
             1.0,
         );
     tree
@@ -235,7 +247,7 @@ fn make_short_breaks_number_adjustment_row() -> impl Widget<TomataState> {
     let tree = Flex::row().with_child(description_label).with_flex_child(
         Flex::row()
             .with_child(Align::right(value_label))
-            .with_flex_child(make_short_breaks_adjustment_buttons(), 1.0),
+            .with_flex_child(Align::right(make_short_breaks_adjustment_buttons()), 1.0),
         1.0,
     );
     tree
@@ -253,7 +265,7 @@ fn make_short_breaks_adjustment_buttons() -> impl Widget<TomataState> {
             data.increase_short_breaks_number(1);
         })
         .expand_width();
-    let minus_button = Button::new("-")
+    let minus_button = Button::new("\u{2212}")
         .on_click(move |_ctx, data: &mut Settings, _env| {
             data.decrease_short_breaks_number(1);
         })
@@ -273,7 +285,7 @@ fn make_long_break_adjustment_row() -> impl Widget<TomataState> {
     let switch = LensWrap::new(switch, TomataState::settings);
     let row = Flex::row()
         .with_child(description_label)
-        .with_child(Align::right(switch));
+        .with_flex_child(Align::right(switch), 1.0);
     row
 }
 
@@ -284,18 +296,18 @@ fn make_next_period_starts_automatically_adjustment_row() -> impl Widget<TomataS
     let switch = LensWrap::new(switch, TomataState::settings);
     let row = Flex::row()
         .with_child(description_label)
-        .with_child(Align::right(switch));
+        .with_flex_child(Align::right(switch), 1.0);
     row
 }
 
 fn make_system_notifications_adjustment_row() -> impl Widget<TomataState> {
-    let description_label = Label::new("Use system notifications");
+    let description_label = Label::new("Use system notifications:");
     let switch = Switch::new();
     let switch = LensWrap::new(switch, Settings::system_notifications_are_enabled);
     let switch = LensWrap::new(switch, TomataState::settings);
     let row = Flex::row()
         .with_child(description_label)
-        .with_child(Align::right(switch));
+        .with_flex_child(Align::right(switch), 1.0);
     row
 }
 
@@ -306,7 +318,7 @@ fn make_period_finishing_sound_adjustment_row() -> impl Widget<TomataState> {
     let switch = LensWrap::new(switch, TomataState::settings);
     let row = Flex::row()
         .with_child(description_label)
-        .with_child(Align::right(switch));
+        .with_flex_child(Align::right(switch), 1.0);
     row
 }
 
@@ -343,7 +355,7 @@ fn make_period_adjusting_button(
 ) -> impl Widget<TomataState> {
     let sign_char: char = match sign {
         Sign::Plus => '+',
-        Sign::Minus => '-',
+        Sign::Minus => '\u{2212}',
     };
     let adjustment_method = match sign {
         Sign::Plus => Settings::increase_period_duration,
