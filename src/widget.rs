@@ -5,13 +5,13 @@ use druid::{
     BoxConstraints, Event, EventCtx, LayoutCtx, LensWrap, LifeCycle, LifeCycleCtx, PaintCtx, Size,
     UnitPoint, UpdateCtx, WidgetExt,
 };
-use druid::{Env, Selector, TimerToken, Widget, WindowDesc};
+use druid::{Env, TimerToken, Widget};
 
 use crate::settings;
 use crate::settings::Settings;
 use crate::state::TomataState;
 use crate::tomata;
-use crate::tomata::{Period, APPLICATION_NAME, HOUR_S, MINUTE_S, SECOND_S, WINDOW_SIZE_PX};
+use crate::tomata::{Period, HOUR_S, MINUTE_S, SECOND_S};
 
 // const TICK_INTERVAL: Duration = Duration::new(ZERO_SECONDS, ONE_THOUSAND_NANOSECONDS);
 // `Duration::new` is not a `const` yet so this function would suffice for now
@@ -38,15 +38,6 @@ impl Widget<TomataState> for TomataApp {
         match event {
             Event::WindowConnected => {
                 self.timer_id = ctx.request_timer(make_tick_interval());
-            }
-            Event::Command(command) => {
-                let settings_selector: Selector<TomataState> = Selector::new("Settings");
-                let about_selector: Selector<TomataState> = Selector::new("About");
-                if command.is(about_selector) {
-                    ctx.new_window(make_about_window());
-                } else if command.is(settings_selector) {
-                    ctx.new_window(make_settings_window());
-                }
             }
             Event::Timer(id) => {
                 if *id == self.timer_id {
@@ -106,7 +97,7 @@ fn make_main_window_widget_tree() -> impl Widget<TomataState> {
     let remaining_time_label = Label::new(|data: &TomataState, _env: &_| {
         tomata::duration_to_string(&data.calculate_remaining_time())
     })
-    .with_text_size(32.0);
+    .with_text_size(52.0);
 
     let start_button =
         Button::new("Start").on_click(|_ctx, data: &mut TomataState, _env| data.start_stopwatch());
@@ -127,39 +118,25 @@ fn make_main_window_widget_tree() -> impl Widget<TomataState> {
         .on_click(|_ctx, data: &mut TomataState, _env| data.activate_period(Period::LongBreak));
 
     let widget_tree = Flex::column()
-        .with_flex_child(Flex::row().with_flex_child(remaining_time_label, 1.0), 1.0)
-        .with_flex_child(
-            Flex::row()
-                .with_flex_child(start_button, 1.0)
-                .with_flex_child(pause_button, 1.0)
-                .with_flex_child(reset_button, 1.0),
+        .with_child(Align::centered(remaining_time_label))
+        .with_child(Padding::new(
             1.0,
-        )
-        .with_flex_child(
-            Flex::row()
-                .with_flex_child(work_period_button, 1.0)
-                .with_flex_child(short_break_period_button, 1.0)
-                .with_flex_child(long_break_period_button, 1.0),
-            1.0,
-        );
+            Align::centered(
+                Flex::row()
+                    .with_child(start_button)
+                    .with_child(pause_button)
+                    .with_child(reset_button)
+                    .with_child(work_period_button)
+                    .with_child(short_break_period_button)
+                    .with_child(long_break_period_button),
+            ),
+        ))
+        .with_spacer(10.0)
+        .with_flex_child(make_settings_wdiget_tree(), 1.0);
     widget_tree
 }
 
-fn make_settings_window() -> WindowDesc<TomataState> {
-    WindowDesc::new(make_settings_window_widget_tree)
-        .title(APPLICATION_NAME)
-        .window_size((420.0, 340.0))
-        .resizable(false)
-}
-
-fn make_about_window() -> WindowDesc<TomataState> {
-    WindowDesc::new(make_about_page)
-        .title(APPLICATION_NAME)
-        .window_size(WINDOW_SIZE_PX)
-        .resizable(false)
-}
-
-fn make_settings_window_widget_tree() -> impl Widget<TomataState> {
+fn make_settings_wdiget_tree() -> impl Widget<TomataState> {
     let tree = Padding::new(
         2.0,
         Flex::column()
@@ -189,9 +166,11 @@ fn make_period_adjustment_row(period: Period) -> impl Widget<TomataState> {
     let tree = Flex::row()
         .with_child(make_period_name_label(period))
         .with_flex_child(
-            Flex::row()
-                .with_child(Align::right(make_period_value_label(period)))
-                .with_flex_child(Align::right(make_period_adjustment_buttons(period)), 1.0),
+            Align::right(
+                Flex::row()
+                    .with_child(make_period_value_label(period))
+                    .with_child(make_period_adjustment_buttons(period)),
+            ),
             1.0,
         );
     tree
@@ -245,9 +224,11 @@ fn make_short_breaks_number_adjustment_row() -> impl Widget<TomataState> {
     let description_label = Label::new("Number of short breaks before long break:");
     let value_label = make_short_breaks_number_before_long_break();
     let tree = Flex::row().with_child(description_label).with_flex_child(
-        Flex::row()
-            .with_child(Align::right(value_label))
-            .with_flex_child(Align::right(make_short_breaks_adjustment_buttons()), 1.0),
+        Align::right(
+            Flex::row()
+                .with_child(value_label)
+                .with_child(make_short_breaks_adjustment_buttons()),
+        ),
         1.0,
     );
     tree
@@ -260,22 +241,15 @@ fn make_short_breaks_number_before_long_break() -> impl Widget<TomataState> {
 }
 
 fn make_short_breaks_adjustment_buttons() -> impl Widget<TomataState> {
-    let plus_button = Button::new("+")
-        .on_click(move |_ctx, data: &mut Settings, _env| {
-            data.increase_short_breaks_number(1);
-        })
-        .expand_width();
-    let minus_button = Button::new("\u{2212}")
-        .on_click(move |_ctx, data: &mut Settings, _env| {
-            data.decrease_short_breaks_number(1);
-        })
-        .expand_width();
-    Flex::row().with_child(
-        Flex::column()
-            .with_child(LensWrap::new(plus_button, TomataState::settings))
-            .with_child(LensWrap::new(minus_button, TomataState::settings))
-            .fix_width(50.0),
-    )
+    let plus_button = Button::new("+").on_click(move |_ctx, data: &mut Settings, _env| {
+        data.increase_short_breaks_number(1);
+    });
+    let minus_button = Button::new("\u{2212}").on_click(move |_ctx, data: &mut Settings, _env| {
+        data.decrease_short_breaks_number(1);
+    });
+    Flex::row()
+        .with_child(LensWrap::new(plus_button, TomataState::settings))
+        .with_child(LensWrap::new(minus_button, TomataState::settings))
 }
 
 fn make_long_break_adjustment_row() -> impl Widget<TomataState> {
@@ -330,11 +304,6 @@ fn make_save_row() -> impl Widget<TomataState> {
         }),
     ));
     LensWrap::new(tree, TomataState::settings)
-}
-
-fn make_about_page() -> impl Widget<TomataState> {
-    let remaining_time_label = Label::new("About page!").with_text_size(32.0);
-    remaining_time_label
 }
 
 enum Sign {

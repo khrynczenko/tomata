@@ -4,7 +4,7 @@ use druid::Data;
 use notify_rust::Notification;
 
 pub const APPLICATION_NAME: &str = "tomata";
-pub const WINDOW_SIZE_PX: (f64, f64) = (250.0, 250.0);
+pub const WINDOW_SIZE_PX: (f64, f64) = (520.0, 460.0);
 
 pub const SECOND_S: u64 = 1;
 pub const MINUTE_S: u64 = SECOND_S * 60;

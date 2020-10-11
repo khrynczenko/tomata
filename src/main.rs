@@ -4,34 +4,17 @@ mod state;
 mod tomata;
 mod widget;
 
-use druid::{AppLauncher, MenuItem, PlatformError, Selector, WindowDesc};
-use druid::{LocalizedString, MenuDesc};
+use druid::{AppLauncher, PlatformError, WindowDesc};
 
 use settings::Settings;
 use sound::{SoundSystem, BEEPER};
 use state::TomataState;
-use tomata::WINDOW_SIZE_PX;
+use tomata::{APPLICATION_NAME, WINDOW_SIZE_PX};
 use widget::TomataApp;
-
-fn make_menu() -> MenuDesc<TomataState> {
-    let mut base = MenuDesc::empty();
-    let mut help = MenuDesc::new(LocalizedString::new("Help"));
-    help = help.append(MenuItem::new(
-        LocalizedString::new("Settings"),
-        Selector::new("Settings"),
-    ));
-    help = help.append(MenuItem::new(
-        LocalizedString::new("About"),
-        Selector::new("About"),
-    ));
-    base = base.append(help);
-    base
-}
 
 fn main() -> Result<(), PlatformError> {
     let window = WindowDesc::new(TomataApp::new)
-        .menu(make_menu())
-        .title("tomata")
+        .title(APPLICATION_NAME)
         .window_size(WINDOW_SIZE_PX)
         .resizable(false);
     BEEPER.set(SoundSystem::default()).unwrap();
@@ -42,7 +25,7 @@ fn main() -> Result<(), PlatformError> {
     } else {
         let settings = Settings::default();
         settings::save_settings_to_file(&settings, "settings.json").expect(&format!(
-            "{}{}",
+            "{} {}",
             "Could not create `settings.json`", "to store the application settings."
         ));
         settings
