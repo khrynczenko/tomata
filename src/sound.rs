@@ -69,7 +69,7 @@ where
     let mut sample_clock = 0f32;
     let mut next_value = move || {
         sample_clock = (sample_clock + 1.0) % sample_rate;
-        (sample_clock * 440.0 * 2.0 * PI / sample_rate).sin()
+        (sample_clock * 440.0 * 2.0 * PI / sample_rate).sin() * 0.1
     };
 
     let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
