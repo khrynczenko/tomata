@@ -16,11 +16,15 @@ const FIVE_MINUTES: u64 = MINUTE_S * 5;
 const EIGHT_MINUTES: u64 = MINUTE_S * 8;
 const DEFAULT_SHORT_BREAKS_BEFORE_LONG_BREAK: usize = 3;
 
+/// Represents all the settings for the application, these are ought be written/read
+/// from a file by means of serialization/deserialization. Most of the settings
+/// can be changed by the user.
+#[non_exhaustive]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, Data, Lens)]
 pub struct Settings {
-    work_period: Rc<Duration>,
-    short_break_period: Rc<Duration>,
-    long_break_period: Rc<Duration>,
+    work_period: Rc<Duration>, // Data cannot be derive fo Duration, unless it is in Rc
+    short_break_period: Rc<Duration>, // Data cannot be derive fo Duration, unless it is in Rc
+    long_break_period: Rc<Duration>, // Data cannot be derive fo Duration, unless it is in Rc
     short_breaks_number: usize,
     long_breaks_are_included: bool,
     next_period_starts_automatically: bool,

@@ -1,3 +1,4 @@
+//! All the functionality related to widgets resides in this module.
 use std::time::Duration;
 
 use druid::widget::{Align, Button, Flex, Label, Padding, Switch};
@@ -14,6 +15,8 @@ use crate::state::TomataState;
 use crate::tomata;
 use crate::tomata::{Period, HOUR_S, MINUTE_S, SECOND_S};
 
+// [`Duration::new`] is not yet `const` so instead we use `Lazy` initialized
+// static variable.
 static TICK_INTERVAL: Lazy<Duration> = Lazy::new(|| Duration::from_secs(1));
 
 pub struct TomataApp {
@@ -21,6 +24,8 @@ pub struct TomataApp {
     widget_tree: Box<dyn Widget<TomataState>>,
 }
 
+/// Main widget that holds the widget tree of all the elements that
+/// build the application.
 impl TomataApp {
     pub fn new() -> TomataApp {
         TomataApp {
@@ -34,6 +39,9 @@ impl Widget<TomataState> for TomataApp {
     fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut TomataState, env: &Env) {
         match event {
             Event::WindowConnected => {
+                // Sets up te timer which fires the [`Event::Timer`] event
+                // after specified amount of time. This mechanism is
+                // used to count elapsed time.
                 self.timer_id = ctx.request_timer(*TICK_INTERVAL);
             }
             Event::Timer(id) => {
@@ -44,6 +52,7 @@ impl Widget<TomataState> for TomataApp {
                     if data.is_period_finished() {
                         data.cycle_to_next_period();
                     }
+                    // Timer must be requested each time seperately.
                     self.timer_id = ctx.request_timer(*TICK_INTERVAL);
                 }
             }

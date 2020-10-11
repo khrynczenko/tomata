@@ -1,3 +1,6 @@
+//! The state of the application reperesented by [`TomataState`]
+//! acts as a model for the application. It is used by the widgets
+//! to present significant data such as remaining time etc.
 use std::rc::Rc;
 use std::time::Duration;
 
@@ -11,7 +14,7 @@ use crate::tomata::{Period, ZERO};
 #[derive(Debug, Clone, Data, Lens)]
 pub struct TomataState {
     settings: Settings,
-    elapsed_time: Rc<Duration>,
+    elapsed_time: Rc<Duration>, // Data cannot be derive fo Duration, unless it is in Rc
     current_period: Period,
     stopwatch_is_paused: bool,
     period_is_finished: bool,
