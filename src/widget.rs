@@ -36,7 +36,13 @@ impl TomataApp {
 }
 
 impl Widget<TomataState> for TomataApp {
-    fn event(&mut self, ctx: &mut EventCtx, event: &Event, data: &mut TomataState, env: &Env) {
+    fn event(
+        &mut self,
+        ctx: &mut EventCtx<'_, '_>,
+        event: &Event,
+        data: &mut TomataState,
+        env: &Env,
+    ) {
         match event {
             Event::WindowConnected => {
                 // Sets up te timer which fires the [`Event::Timer`] event
@@ -63,7 +69,7 @@ impl Widget<TomataState> for TomataApp {
 
     fn lifecycle(
         &mut self,
-        ctx: &mut LifeCycleCtx,
+        ctx: &mut LifeCycleCtx<'_, '_>,
         event: &LifeCycle,
         data: &TomataState,
         env: &Env,
@@ -76,7 +82,7 @@ impl Widget<TomataState> for TomataApp {
 
     fn update(
         &mut self,
-        ctx: &mut UpdateCtx,
+        ctx: &mut UpdateCtx<'_, '_>,
         old_data: &TomataState,
         data: &TomataState,
         env: &Env,
@@ -86,7 +92,7 @@ impl Widget<TomataState> for TomataApp {
 
     fn layout(
         &mut self,
-        ctx: &mut LayoutCtx,
+        ctx: &mut LayoutCtx<'_, '_>,
         bc: &BoxConstraints,
         data: &TomataState,
         env: &Env,
@@ -94,7 +100,7 @@ impl Widget<TomataState> for TomataApp {
         self.widget_tree.layout(ctx, bc, data, env)
     }
 
-    fn paint(&mut self, ctx: &mut PaintCtx, data: &TomataState, env: &Env) {
+    fn paint(&mut self, ctx: &mut PaintCtx<'_, '_, '_>, data: &TomataState, env: &Env) {
         self.widget_tree.paint(ctx, data, env);
     }
 }
@@ -123,7 +129,7 @@ fn make_main_window_widget_tree() -> impl Widget<TomataState> {
     let long_break_period_button = Button::new("Long")
         .on_click(|_ctx, data: &mut TomataState, _env| data.activate_period(Period::LongBreak));
 
-    let widget_tree = Flex::column()
+    Flex::column()
         .with_child(Align::centered(remaining_time_label))
         .with_child(Padding::new(
             1.0,
@@ -138,12 +144,11 @@ fn make_main_window_widget_tree() -> impl Widget<TomataState> {
             ),
         ))
         .with_spacer(10.0)
-        .with_flex_child(make_settings_wdiget_tree(), 1.0);
-    widget_tree
+        .with_flex_child(make_settings_wdiget_tree(), 1.0)
 }
 
 fn make_settings_wdiget_tree() -> impl Widget<TomataState> {
-    let tree = Padding::new(
+    Padding::new(
         2.0,
         Flex::column()
             .with_child(make_period_adjustment_row(Period::Work))
@@ -164,12 +169,11 @@ fn make_settings_wdiget_tree() -> impl Widget<TomataState> {
             .with_spacer(3.0)
             .with_child(make_save_row())
             .with_spacer(3.0),
-    );
-    tree
+    )
 }
 
 fn make_period_adjustment_row(period: Period) -> impl Widget<TomataState> {
-    let tree = Flex::row()
+    Flex::row()
         .with_child(make_period_name_label(period))
         .with_flex_child(
             Align::right(
@@ -178,8 +182,7 @@ fn make_period_adjustment_row(period: Period) -> impl Widget<TomataState> {
                     .with_child(make_period_adjustment_buttons(period)),
             ),
             1.0,
-        );
-    tree
+        )
 }
 
 fn make_period_name_label(period: Period) -> impl Widget<TomataState> {
@@ -229,15 +232,14 @@ fn make_period_adjustment_buttons(period: Period) -> impl Widget<TomataState> {
 fn make_short_breaks_number_adjustment_row() -> impl Widget<TomataState> {
     let description_label = Label::new("Number of short breaks before long break:");
     let value_label = make_short_breaks_number_before_long_break();
-    let tree = Flex::row().with_child(description_label).with_flex_child(
+    Flex::row().with_child(description_label).with_flex_child(
         Align::right(
             Flex::row()
                 .with_child(value_label)
                 .with_child(make_short_breaks_adjustment_buttons()),
         ),
         1.0,
-    );
-    tree
+    )
 }
 
 fn make_short_breaks_number_before_long_break() -> impl Widget<TomataState> {
@@ -263,10 +265,9 @@ fn make_long_break_adjustment_row() -> impl Widget<TomataState> {
     let switch = Switch::new();
     let switch = LensWrap::new(switch, Settings::long_breaks_are_included);
     let switch = LensWrap::new(switch, TomataState::settings);
-    let row = Flex::row()
+    Flex::row()
         .with_child(description_label)
-        .with_flex_child(Align::right(switch), 1.0);
-    row
+        .with_flex_child(Align::right(switch), 1.0)
 }
 
 fn make_next_period_starts_automatically_adjustment_row() -> impl Widget<TomataState> {
@@ -274,10 +275,9 @@ fn make_next_period_starts_automatically_adjustment_row() -> impl Widget<TomataS
     let switch = Switch::new();
     let switch = LensWrap::new(switch, Settings::next_period_starts_automatically);
     let switch = LensWrap::new(switch, TomataState::settings);
-    let row = Flex::row()
+    Flex::row()
         .with_child(description_label)
-        .with_flex_child(Align::right(switch), 1.0);
-    row
+        .with_flex_child(Align::right(switch), 1.0)
 }
 
 fn make_system_notifications_adjustment_row() -> impl Widget<TomataState> {
@@ -285,10 +285,9 @@ fn make_system_notifications_adjustment_row() -> impl Widget<TomataState> {
     let switch = Switch::new();
     let switch = LensWrap::new(switch, Settings::system_notifications_are_enabled);
     let switch = LensWrap::new(switch, TomataState::settings);
-    let row = Flex::row()
+    Flex::row()
         .with_child(description_label)
-        .with_flex_child(Align::right(switch), 1.0);
-    row
+        .with_flex_child(Align::right(switch), 1.0)
 }
 
 fn make_period_finishing_sound_adjustment_row() -> impl Widget<TomataState> {
@@ -296,10 +295,9 @@ fn make_period_finishing_sound_adjustment_row() -> impl Widget<TomataState> {
     let switch = Switch::new();
     let switch = LensWrap::new(switch, Settings::period_ending_sound_is_enabled);
     let switch = LensWrap::new(switch, TomataState::settings);
-    let row = Flex::row()
+    Flex::row()
         .with_child(description_label)
-        .with_flex_child(Align::right(switch), 1.0);
-    row
+        .with_flex_child(Align::right(switch), 1.0)
 }
 
 fn make_save_row() -> impl Widget<TomataState> {

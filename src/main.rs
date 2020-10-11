@@ -1,3 +1,7 @@
+#![deny(warnings)]
+#![deny(rust_2018_idioms)]
+#![deny(clippy::all)]
+
 mod settings;
 mod sound;
 mod state;
@@ -20,14 +24,16 @@ fn main() -> Result<(), PlatformError> {
     BEEPER.set(SoundSystem::default()).unwrap();
 
     let settings_result = settings::load_settings_from_file("settings.json");
-    let settings = if settings_result.is_some() {
-        settings_result.unwrap()
+    let settings = if let Some(x) = settings_result {
+        x
     } else {
         let settings = Settings::default();
-        settings::save_settings_to_file(&settings, "settings.json").expect(&format!(
-            "{} {}",
-            "Could not create `settings.json`", "to store the application settings."
-        ));
+        settings::save_settings_to_file(&settings, "settings.json").unwrap_or_else(|_| {
+            panic!(
+                "{} {}",
+                "Could not create `settings.json`", "to store the application settings."
+            )
+        });
         settings
     };
 

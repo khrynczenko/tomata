@@ -49,6 +49,7 @@ impl Default for Settings {
 
 impl Settings {
     #[allow(dead_code)] // used in tests
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         work_period: Duration,
         short_break_period: Duration,
@@ -87,7 +88,6 @@ impl Settings {
                 let current_period_duration = &self.work_period;
                 if value > **current_period_duration {
                     self.work_period = Rc::new(Duration::from_secs(0));
-                    return;
                 } else {
                     self.work_period = Rc::new(*self.work_period - value)
                 }
@@ -96,7 +96,6 @@ impl Settings {
                 let current_period_duration = &self.short_break_period;
                 if value > **current_period_duration {
                     self.short_break_period = Rc::new(Duration::from_secs(0));
-                    return;
                 } else {
                     self.short_break_period = Rc::new(*self.short_break_period - value)
                 }
@@ -105,7 +104,6 @@ impl Settings {
                 let current_period_duration = &self.long_break_period;
                 if value > **current_period_duration {
                     self.long_break_period = Rc::new(Duration::from_secs(0));
-                    return;
                 } else {
                     self.long_break_period = Rc::new(*self.long_break_period - value)
                 }

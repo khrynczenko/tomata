@@ -2,6 +2,7 @@
 /// the `beep` example from the `cpal` crate. For more details
 /// go there.
 use std::error::Error;
+use std::f32::consts::PI;
 use std::fmt;
 use std::time::Duration;
 
@@ -68,7 +69,7 @@ where
     let mut sample_clock = 0f32;
     let mut next_value = move || {
         sample_clock = (sample_clock + 1.0) % sample_rate;
-        (sample_clock * 440.0 * 2.0 * 3.141592 / sample_rate).sin()
+        (sample_clock * 440.0 * 2.0 * PI / sample_rate).sin()
     };
 
     let err_fn = |err| eprintln!("an error occurred on stream: {}", err);
