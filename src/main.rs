@@ -1,6 +1,7 @@
 #![deny(warnings)]
 #![deny(rust_2018_idioms)]
 #![deny(clippy::all)]
+#![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod settings;
 mod sound;
