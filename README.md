@@ -16,7 +16,7 @@ of the user, i.e., provides wide set of settings.
 ### Systems
 
 Although *tomata* should be working on macOS it was only sufficiently
-tested on Linux(Ubuntu) and Windows.
+tested on Linux(Ubuntu) and Windows only.
 
 ## Features
 
