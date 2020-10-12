@@ -1,8 +1,12 @@
 [package]
 name = "tomata"
 version = "0.1.0"
-authors = ["wednesday <jeniopy@gmail.com>"]
+authors = ["Krzysztof Hrynczenko <jeniopy@gmail.com>"]
 edition = "2018"
+license = "MIT"
+homepage = "https://github.com/khrynczenko/tomata"
+repository = "https://github.com/khrynczenko/tomata"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
