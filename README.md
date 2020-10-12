@@ -39,4 +39,4 @@ in [.github/workflows/](https://github.com/khrynczenko/tomata/blob/master/.githu
 
 ## Obligatory screenshot
 
-![tomata-screenshot](/screens/screen1.png)
+![tomata-screenshot](/screens/screen1.PNG)
