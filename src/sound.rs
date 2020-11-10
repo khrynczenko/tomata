@@ -39,16 +39,16 @@ impl Default for SoundSystem {
 }
 
 impl SoundSystem {
-    pub fn beep(&self) -> Result<(), Box<dyn Error>> {
+    pub fn beep(&self, volume: f32) -> Result<(), Box<dyn Error>> {
         match self.config.sample_format() {
             cpal::SampleFormat::F32 => {
-                make_beep_sound::<f32>(&self.device, &self.config.clone().into())?
+                make_beep_sound::<f32>(&self.device, &self.config.clone().into(), volume)?
             }
             cpal::SampleFormat::I16 => {
-                make_beep_sound::<i16>(&self.device, &self.config.clone().into())?
+                make_beep_sound::<i16>(&self.device, &self.config.clone().into(), volume)?
             }
             cpal::SampleFormat::U16 => {
-                make_beep_sound::<u16>(&self.device, &self.config.clone().into())?
+                make_beep_sound::<u16>(&self.device, &self.config.clone().into(), volume)?
             }
         }
         Ok(())
@@ -58,6 +58,7 @@ impl SoundSystem {
 fn make_beep_sound<T>(
     device: &cpal::Device,
     config: &cpal::StreamConfig,
+    volume: f32,
 ) -> Result<(), Box<dyn Error>>
 where
     T: cpal::Sample,
@@ -69,7 +70,7 @@ where
     let mut sample_clock = 0f32;
     let mut next_value = move || {
         sample_clock = (sample_clock + 1.0) % sample_rate;
-        (sample_clock * 440.0 * 2.0 * PI / sample_rate).sin() * 0.1
+        (sample_clock * 440.0 * 2.0 * PI / sample_rate).sin() * volume
     };
 
     let err_fn = |err| eprintln!("an error occurred on stream: {}", err);

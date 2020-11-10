@@ -30,6 +30,7 @@ pub struct Settings {
     next_period_starts_automatically: bool,
     system_notifications_are_enabled: bool,
     period_ending_sound_is_enabled: bool,
+    beep_volume: f64,
 }
 
 impl Default for Settings {
@@ -43,6 +44,7 @@ impl Default for Settings {
             next_period_starts_automatically: false,
             system_notifications_are_enabled: true,
             period_ending_sound_is_enabled: true,
+            beep_volume: 0.1,
         }
     }
 }
@@ -59,6 +61,7 @@ impl Settings {
         next_period_starts_automatically: bool,
         system_notifications_are_enabled: bool,
         period_ending_sound_is_enabled: bool,
+        beep_volume: f64,
     ) -> Settings {
         Settings {
             work_period: Rc::new(work_period),
@@ -69,6 +72,7 @@ impl Settings {
             next_period_starts_automatically,
             system_notifications_are_enabled,
             period_ending_sound_is_enabled,
+            beep_volume,
         }
     }
 
@@ -149,6 +153,13 @@ impl Settings {
             Period::ShortBreak => *self.short_break_period,
             Period::LongBreak => *self.long_break_period,
         }
+    }
+
+    pub fn get_beep_volume(&self) -> f32 {
+        // This function returns f32 because that is what slider widgets
+        // works with. I decided that making a Lens for the f64 is not
+        // worth the effort.
+        self.beep_volume as f32
     }
 }
 

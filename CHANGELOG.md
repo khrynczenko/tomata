@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Features
+
+- added beep volume adjustment setting
+
 ## [0.1.0] - 2020-10-12
 
 This is the initial release that brings the minimum set of required

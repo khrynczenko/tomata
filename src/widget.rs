@@ -1,7 +1,7 @@
 //! All the functionality related to widgets resides in this module.
 use std::time::Duration;
 
-use druid::widget::{Align, Button, Flex, Label, Padding, Switch};
+use druid::widget::{Align, Button, Flex, Label, Padding, Slider, Switch};
 use druid::{
     BoxConstraints, Event, EventCtx, LayoutCtx, LensWrap, LifeCycle, LifeCycleCtx, PaintCtx, Size,
     UnitPoint, UpdateCtx, WidgetExt,
@@ -167,6 +167,8 @@ fn make_settings_wdiget_tree() -> impl Widget<TomataState> {
             .with_spacer(3.0)
             .with_child(make_period_finishing_sound_adjustment_row())
             .with_spacer(3.0)
+            .with_child(make_beep_volume_adjustment_row())
+            .with_spacer(3.0)
             .with_child(make_save_row())
             .with_spacer(3.0),
     )
@@ -298,6 +300,20 @@ fn make_period_finishing_sound_adjustment_row() -> impl Widget<TomataState> {
     Flex::row()
         .with_child(description_label)
         .with_flex_child(Align::right(switch), 1.0)
+}
+
+fn make_beep_volume_adjustment_row() -> impl Widget<TomataState> {
+    let description_label = Label::new("Beep volume:");
+    let slider = Slider::new().with_range(0.0, 1.0);
+    let slider = LensWrap::new(slider, Settings::beep_volume);
+    let slider = LensWrap::new(slider, TomataState::settings);
+    let beep_button = Button::new("try").on_click(move |_ctx, data: &mut TomataState, _env| {
+        data.beep();
+    });
+    Flex::row().with_child(description_label).with_flex_child(
+        Align::right(Flex::row().with_child(beep_button).with_child(slider)),
+        1.0,
+    )
 }
 
 fn make_save_row() -> impl Widget<TomataState> {

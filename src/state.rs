@@ -42,6 +42,14 @@ impl TomataState {
         state.settings = settings;
         state
     }
+
+    pub fn beep(&self) {
+        let volume = self.settings.get_beep_volume();
+        std::thread::spawn(move || {
+            BEEPER.get().unwrap().beep(volume).unwrap();
+        });
+    }
+
     pub fn is_stopwatch_paused(&self) -> bool {
         self.stopwatch_is_paused
     }
@@ -101,9 +109,7 @@ impl TomataState {
 
     pub fn increase_elapsed_time(&mut self, value: Duration) {
         if self.is_period_finishing() && self.settings.is_period_ending_sound_enabled() {
-            std::thread::spawn(|| {
-                BEEPER.get().unwrap().beep().unwrap();
-            });
+            self.beep();
         }
 
         self.elapsed_time = Rc::new(*self.elapsed_time + value);
@@ -152,6 +158,7 @@ mod tests {
             false, // during tests we don't want the system notifications
             // running
             false, // during tests we don't want the beep sound effect
+            0.1,
         );
         TomataState::new(settings)
     }
