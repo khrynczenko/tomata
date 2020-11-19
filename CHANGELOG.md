@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- denied more `rustc` lints
+
 ### Features
 
 - added beep volume adjustment setting
