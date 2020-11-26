@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- increased window height on Windows OS ("Save" button was not fully visible
+  before)
 - added link-time optimization to release builds
 - denied more `rustc` lints
 
