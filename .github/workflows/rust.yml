@@ -1,23 +1,18 @@
-name: Rust
+name: rust, cargo
 
-on:
-    push:
-        branches:
-            - master
-    pull_request:
-        branches:
-            - master
+on: [push, pull_request]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  cargo:
+    name: cargo
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: checkout repository
+      uses: actions/checkout@v2
     - name: Install necessary packages
       run: |
         sudo apt-get install libasound2-dev
