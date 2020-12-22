@@ -4,9 +4,9 @@
     rust_2018_idioms,
     nonstandard_style,
     future_incompatible,
-    unsafe_code,
     clippy::all
 )]
+#![forbid(unsafe_code)]
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod settings;
