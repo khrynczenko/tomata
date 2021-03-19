@@ -38,9 +38,10 @@ impl Default for TomataState {
 
 impl TomataState {
     pub fn new(settings: Settings) -> TomataState {
-        let mut state = TomataState::default();
-        state.settings = settings;
-        state
+        TomataState {
+            settings,
+            ..Default::default()
+        }
     }
 
     pub fn beep(&self) {

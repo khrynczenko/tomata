@@ -31,9 +31,7 @@ fn main() -> Result<(), PlatformError> {
     BEEPER.set(SoundSystem::default()).unwrap();
 
     let settings_result = settings::load_settings_from_file("settings.json");
-    let settings = if let Some(x) = settings_result {
-        x
-    } else {
+    let settings = settings_result.unwrap_or_else(|| {
         let settings = Settings::default();
         settings::save_settings_to_file(&settings, "settings.json").unwrap_or_else(|_| {
             panic!(
@@ -42,7 +40,7 @@ fn main() -> Result<(), PlatformError> {
             )
         });
         settings
-    };
+    });
 
     let state = TomataState::new(settings);
     AppLauncher::with_window(window).launch(state)?;
