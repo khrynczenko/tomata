@@ -14,7 +14,7 @@ use crate::tomata::{Period, ZERO};
 #[derive(Debug, Clone, Data, Lens)]
 pub struct TomataState {
     settings: Settings,
-    elapsed_time: Rc<Duration>, // Data cannot be derive fo Duration, unless it is in Rc
+    elapsed_time: Rc<Duration>, // Data cannot be derived for Duration, unless it is in Rc
     current_period: Period,
     stopwatch_is_paused: bool,
     period_is_finished: bool,
