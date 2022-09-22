@@ -17,7 +17,7 @@ pub const HOUR_S: u64 = MINUTE_S * 60;
 
 pub static ZERO: Duration = Duration::from_secs(0);
 
-#[derive(Debug, Copy, Clone, PartialEq, Data)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Data)]
 pub enum Period {
     Work,
     ShortBreak,

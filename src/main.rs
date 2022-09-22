@@ -1,7 +1,10 @@
+// lib.rs or main.rs
 #![deny(
     warnings,
+    unused,
     missing_debug_implementations,
     rust_2018_idioms,
+    rust_2021_compatibility,
     nonstandard_style,
     future_incompatible,
     clippy::all

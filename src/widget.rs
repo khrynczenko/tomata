@@ -1,10 +1,10 @@
 //! All the functionality related to widgets resides in this module.
 use std::time::Duration;
 
-use druid::widget::{Align, Button, Flex, Label, Padding, Slider, Switch};
+use druid::widget::{Align, Button, Flex, Label, LensWrap, Padding, Slider, Switch};
 use druid::{
-    BoxConstraints, Event, EventCtx, LayoutCtx, LensWrap, LifeCycle, LifeCycleCtx, PaintCtx, Size,
-    UnitPoint, UpdateCtx, WidgetExt,
+    BoxConstraints, Event, EventCtx, LayoutCtx, LifeCycle, LifeCycleCtx, PaintCtx, Size, UnitPoint,
+    UpdateCtx, WidgetExt,
 };
 use druid::{Env, TimerToken, Widget};
 use once_cell::sync::Lazy;
